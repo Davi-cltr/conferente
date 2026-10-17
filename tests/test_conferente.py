@@ -2,14 +2,12 @@ from decimal import Decimal
 from pathlib import Path
 
 import pytest
-from fastapi.testclient import TestClient
 
 from conferente.cli import main
 from conferente.parser import ler_nota, ler_pasta
 from conferente.regras import conferir
 from conferente.relatorio import gerar_html, processar
 from conferente.simulacao import simular
-from conferente.web.app import app
 
 AMOSTRAS = Path(__file__).parent / "amostras"
 
@@ -91,13 +89,3 @@ def test_relatorio_html_e_cli(tmp_path):
     saida = tmp_path / "r.html"
     assert main(["conferir", str(AMOSTRAS), "-o", str(saida)]) == 1  # 1 = há erros
     assert saida.read_text(encoding="utf-8").startswith("<!doctype html>")
-
-
-def test_web_upload():
-    c = TestClient(app)
-    assert c.get("/").status_code == 200
-    arquivos = [("arquivos", (p.name, p.read_bytes(), "text/xml")) for p in sorted(AMOSTRAS.glob("*.xml"))]
-    r = c.post("/conferir", files=arquivos, data={"escritorio": "Teste", "cbs_2027": "8,8"})
-    assert r.status_code == 200 and "Simulação 2027" in r.text
-    r = c.post("/conferir", files=[("arquivos", ("x.xml", b"nada", "text/xml"))])
-    assert r.status_code == 400

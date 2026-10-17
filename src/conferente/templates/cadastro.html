@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block titulo %}Criar conta · Conferente{% endblock %}
+{% block corpo %}
+<div class="w estreito">
+  <h1>Crie a conta do seu escritório</h1>
+  <p class="sub">{{ dias_teste }} dias grátis para conferir notas de até {{ cnpjs_teste }} clientes. Sem cartão.</p>
+  <form class="caixa campos" method="post" action="/cadastro">
+    {% if erro %}<div class="msg erro">{{ erro }}</div>{% endif %}
+    <input type="hidden" name="plano" value="{{ plano }}">
+    <div><label for="escritorio">Nome do escritório</label><input id="escritorio" name="escritorio" value="{{ dados.escritorio }}" required maxlength="120" autocomplete="organization"></div>
+    <div><label for="cnpj">CNPJ do escritório</label><input id="cnpj" name="cnpj" value="{{ dados.cnpj }}" required inputmode="numeric" placeholder="00.000.000/0000-00"></div>
+    <div><label for="responsavel">Seu nome</label><input id="responsavel" name="responsavel" value="{{ dados.responsavel }}" required maxlength="120" autocomplete="name"></div>
+    <div><label for="email">E-mail</label><input id="email" name="email" type="email" value="{{ dados.email }}" required autocomplete="email"></div>
+    <div><label for="whatsapp">WhatsApp <small>(opcional)</small></label><input id="whatsapp" name="whatsapp" value="{{ dados.whatsapp }}" inputmode="tel" autocomplete="tel" placeholder="(19) 99999-9999"></div>
+    <div><label for="senha">Senha <small>(mínimo de 8 caracteres)</small></label><input id="senha" name="senha" type="password" required minlength="8" autocomplete="new-password"></div>
+    <button class="btn largo" type="submit">Criar conta e começar</button>
+    <p style="margin:0;font-size:14px;color:var(--suave)">Já tem conta? <a href="/entrar">Entrar</a></p>
+  </form>
+</div>
+{% endblock %}
+{% block script %}
+<script>
+const c = document.getElementById('cnpj');
+c.addEventListener('input', () => {
+  const d = c.value.replace(/\D/g, '').slice(0, 14);
+  const p = [d.slice(0,2), d.slice(2,5), d.slice(5,8), d.slice(8,12), d.slice(12,14)];
+  c.value = d.length <= 2 ? p[0] : d.length <= 5 ? `${p[0]}.${p[1]}` : d.length <= 8 ? `${p[0]}.${p[1]}.${p[2]}`
+          : d.length <= 12 ? `${p[0]}.${p[1]}.${p[2]}/${p[3]}` : `${p[0]}.${p[1]}.${p[2]}/${p[3]}-${p[4]}`;
+});
+</script>
+{% endblock %}

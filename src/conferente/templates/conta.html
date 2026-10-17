@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% block titulo %}Minha conta · Conferente{% endblock %}
+{% block estilo %}
+.situacao{display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap}
+.situacao .grande{font:700 28px/1.1 Fraunces,serif}
+.situacao .det{color:var(--suave);font-size:14px}
+.planos{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px}
+.plano{background:var(--branco);border:1.5px solid var(--linha);border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:8px}
+.plano.atual{border-color:var(--marca)}
+.plano.sugerido{border-color:var(--marca);box-shadow:0 0 0 3px var(--marca-cl)}
+.plano .preco{font:700 26px/1 Fraunces,serif}.plano .preco small{font:500 14px Inter,sans-serif;color:var(--suave)}
+.plano .det{color:var(--suave);font-size:14px;flex:1}
+.plano form{margin:0}
+.aguardando{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap}
+.aguardando .info{flex:1;min-width:240px}
+.girando{width:18px;height:18px;border:3px solid var(--marca-cl);border-top-color:var(--marca);border-radius:50%;animation:gira 1s linear infinite;display:inline-block;vertical-align:-3px;margin-right:6px}
+@keyframes gira{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion: reduce){.girando{animation:none}}
+.grade2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:640px){.grade2{grid-template-columns:1fr}}
+{% endblock %}
+{% block corpo %}
+<div class="w">
+  {% for tipo, texto in mensagens %}<div class="msg {{ tipo }}">{{ texto }}</div>{% endfor %}
+
+  <h1>{{ conta.escritorio }}</h1>
+  <p class="sub">{{ conta.cnpj|cnpj }} · {{ conta.responsavel }} · {{ conta.email }}</p>
+
+  <div class="caixa situacao">
+    <div>
+      <div class="det">Plano</div>
+      <div class="grande">{{ conta.nome_plano }}</div>
+      <div class="det">Até {{ conta.limite_cnpjs }} CNPJs de clientes por conferência</div>
+    </div>
+    <div>
+      {% if conta.ativa %}
+        <span class="selo {{ 'aviso' if conta.dias_restantes <= 5 else 'ok' }}">{% if conta.dias_restantes == 0 %}Vence hoje{% else %}Ativo · {{ conta.dias_restantes }} dia{{ 's' if conta.dias_restantes != 1 }}{% endif %}</span>
+        <div class="det">Acesso até {{ conta.ativo_ate.strftime('%d/%m/%Y') }}</div>
+      {% else %}
+        <span class="selo erro">Vencido</span>
+        <div class="det">Venceu em {{ conta.ativo_ate.strftime('%d/%m/%Y') }}</div>
+      {% endif %}
+    </div>
+    <div>{% if conta.ativa %}<a class="btn" href="/app">Conferir notas</a>{% endif %}</div>
+  </div>
+
+  {% if pendente %}
+  <h2>Pagamento em andamento</h2>
+  <div class="caixa aguardando" id="pendente" data-ref="{{ pendente.referencia }}">
+    <div class="info">
+      <b>{{ pendente.nome_plano }} · {{ pendente.valor|brl }}</b>
+      <p class="det" style="margin:6px 0 0" id="pendente-texto"><span class="girando" aria-hidden="true"></span>Aguardando a confirmação. Esta página confere sozinha a cada 5 segundos.</p>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <a class="btn" href="{{ pendente.link }}" target="_blank" rel="noopener">Abrir a página de pagamento</a>
+      <form method="post" action="/pagamento/{{ pendente.referencia }}/verificar" style="margin:0"><button class="btn sec" type="submit">Já paguei, conferir agora</button></form>
+      <form method="post" action="/pagamento/{{ pendente.referencia }}/cancelar" style="margin:0"><button class="btn link" type="submit">Cancelar</button></form>
+    </div>
+  </div>
+  {% endif %}
+
+  <h2>{% if conta.em_teste %}Escolha seu plano{% else %}Renovar ou mudar de plano{% endif %}</h2>
+  <p class="sub">Cada pagamento libera 30 dias, somados ao tempo que você ainda tem. Pix, cartão ou boleto{% if modo == 'mercadopago' %}, pelo Mercado Pago{% endif %}.</p>
+  <div class="planos">
+  {% for p in planos %}
+    {% if p.codigo != 'fundador' or vagas_fundador > 0 or conta.plano == 'fundador' %}
+    <div class="plano {{ 'atual' if conta.plano == p.codigo }} {{ 'sugerido' if sugerido == p.codigo }}">
+      <b>{{ p.nome }}{% if conta.plano == p.codigo %} <span class="selo ok">atual</span>{% endif %}</b>
+      <div class="preco">{{ p.preco|brl }}<small>/30 dias</small></div>
+      <div class="det">Até {{ p.cnpjs }} CNPJs{% if p.codigo == 'fundador' %} · preço travado por 12 meses{% endif %}</div>
+      <form method="post" action="/assinar"><input type="hidden" name="plano" value="{{ p.codigo }}"><button class="btn {{ '' if sugerido == p.codigo or conta.plano == p.codigo else 'sec' }} largo" type="submit">{% if conta.plano == p.codigo %}Renovar{% else %}Pagar {{ p.preco|brl }}{% endif %}</button></form>
+    </div>
+    {% endif %}
+  {% endfor %}
+  </div>
+
+  <h2>Pagamentos</h2>
+  {% if pagamentos %}
+  <div class="tabela"><table>
+    <thead><tr><th>Data</th><th>Plano</th><th class="num">Valor</th><th>Situação</th><th>Referência</th></tr></thead>
+    <tbody>
+    {% for p in pagamentos %}
+      <tr>
+        <td>{{ p.criado_em[8:10] }}/{{ p.criado_em[5:7] }}/{{ p.criado_em[:4] }}</td>
+        <td>{{ p.nome_plano }}</td>
+        <td class="num">{{ p.valor|brl }}</td>
+        <td>{% if p.status == 'aprovado' %}<span class="selo ok">Pago</span>{% elif p.status == 'pendente' %}<span class="selo aviso">Aguardando</span>{% elif p.status == 'recusado' %}<span class="selo erro">Recusado</span>{% else %}<span class="selo neutro">Cancelado</span>{% endif %}</td>
+        <td style="font-size:13px;color:var(--suave)">{{ p.referencia }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+  {% else %}
+  <p class="sub">Nenhum pagamento ainda.</p>
+  {% endif %}
+</div>
+{% endblock %}
+{% block script %}
+{% if pendente %}
+<script>
+(() => {
+  const caixa = document.getElementById('pendente');
+  const ref = caixa.dataset.ref;
+  let tentativas = 0;
+  const conferir = async () => {
+    tentativas++;
+    try {
+      const r = await fetch(`/pagamento/${ref}/situacao`, {cache: 'no-store'});
+      if (r.ok) {
+        const d = await r.json();
+        if (d.status === 'aprovado' || d.status === 'recusado') { location.href = `/conta?resultado=${d.status}`; return; }
+      }
+    } catch (e) {}
+    if (tentativas < 360) setTimeout(conferir, 5000);
+    else document.getElementById('pendente-texto').textContent = 'Paramos de conferir sozinhos. Se já pagou, clique em “Já paguei, conferir agora”.';
+  };
+  setTimeout(conferir, 5000);
+})();
+</script>
+{% endif %}
+{% endblock %}

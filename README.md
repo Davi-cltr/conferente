@@ -31,7 +31,13 @@ Veja um relatório de exemplo em [docs/exemplo-relatorio.html](docs/exemplo-rela
 
 ## Como usar
 
-**No Windows, o jeito mais fácil:** dê dois cliques em `iniciar.bat`. Na primeira vez ele prepara o ambiente; depois abre o Conferente no navegador. Para testar, arraste os arquivos da pasta `tests/amostras`.
+**No Windows, o jeito mais fácil:** dê dois cliques em `iniciar.bat`. Na primeira vez ele prepara o ambiente; depois abre o Conferente no navegador.
+
+O sistema completo tem: site com planos, cadastro do escritório (com 14 dias grátis), login, área **Minha conta** com pagamento por plano e a conferência de notas, liberada só para contas ativas. Contas e pagamentos ficam em `dados/conferente.db`.
+
+Sem configuração, os pagamentos são **simulados**. Para usar o Mercado Pago, siga [docs/pagamento-mercadopago.md](docs/pagamento-mercadopago.md).
+
+Para testar a conferência, use os arquivos da pasta `tests/amostras`.
 
 Pela linha de comando:
 

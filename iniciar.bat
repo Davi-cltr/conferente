@@ -24,7 +24,7 @@ if not exist ".venv\Scripts\python.exe" (
 
 echo.
 echo  Conferente rodando em http://127.0.0.1:8000
-echo  Para testar, arraste os arquivos da pasta tests\amostras.
+echo  Abra "Comecar teste gratis" para criar uma conta. Notas de exemplo: pasta tests\amostras.
 echo  Para encerrar, feche esta janela.
 echo.
 start "" http://127.0.0.1:8000

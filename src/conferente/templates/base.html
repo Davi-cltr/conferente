@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block titulo %}Conferente{% endblock %}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--tinta:#14211d;--suave:#56655f;--linha:#d9e1dd;--papel:#fbfaf6;--branco:#fff;--marca:#0f5f4b;--marca-esc:#0a4636;--marca-cl:#e3f1ec;--erro:#b42318;--erro-cl:#fdecea;--aviso:#a15c07;--aviso-cl:#fef4e4;--escuro:#14211d}
+*{box-sizing:border-box}
+body{margin:0;background:var(--papel);color:var(--tinta);font:16px/1.6 Inter,system-ui,sans-serif;font-variant-numeric:tabular-nums}
+a{color:var(--marca)}
+.w{max-width:1080px;margin:0 auto;padding:0 20px}
+.estreito{max-width:480px}
+nav.topo{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:20px 0;flex-wrap:wrap}
+.logo{font:700 22px/1 Fraunces,Georgia,serif;letter-spacing:-.01em;color:var(--tinta);text-decoration:none}.logo span{color:var(--marca)}
+nav.topo .links{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+nav.topo form{margin:0}
+.btn{display:inline-block;background:var(--marca);color:#fff;text-decoration:none;font:600 15px/1.2 Inter,sans-serif;padding:12px 20px;border-radius:9px;border:0;cursor:pointer;text-align:center}
+.btn:hover{background:var(--marca-esc)}
+.btn.sec{background:transparent;color:var(--marca);border:1.5px solid var(--marca)}
+.btn.sec:hover{background:var(--marca-cl)}
+.btn.link{background:none;color:var(--suave);padding:8px 4px;font-weight:500}
+.btn.perigo{background:var(--erro)}
+.btn.largo{width:100%}
+.btn:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #7cc4ad;outline-offset:2px}
+h1,h2,h3{font-family:Fraunces,Georgia,serif;letter-spacing:-.015em;text-wrap:balance}
+h1{font-size:clamp(30px,4vw,42px);line-height:1.1;margin:8px 0 12px}
+h2{font-size:24px;margin:36px 0 12px}
+.sub{color:var(--suave);margin:0 0 24px}
+.caixa{background:var(--branco);border:1px solid var(--linha);border-radius:14px;padding:24px}
+form.campos{display:grid;gap:14px}
+label{font-weight:600;font-size:14px;display:block;margin-bottom:5px}
+label small{font-weight:400;color:var(--suave)}
+input,select{font:inherit;padding:11px 13px;border:1px solid var(--linha);border-radius:9px;background:#fff;width:100%;color:var(--tinta)}
+.msg{border-radius:9px;padding:12px 14px;margin-bottom:16px}
+.msg.erro{background:var(--erro-cl);color:var(--erro)}
+.msg.ok{background:var(--marca-cl);color:var(--marca)}
+.msg.aviso{background:var(--aviso-cl);color:var(--aviso)}
+.selo{display:inline-block;font-size:12px;font-weight:600;padding:3px 10px;border-radius:99px;white-space:nowrap}
+.selo.ok{background:var(--marca-cl);color:var(--marca)}.selo.erro{background:var(--erro-cl);color:var(--erro)}.selo.aviso{background:var(--aviso-cl);color:var(--aviso)}.selo.neutro{background:#eef1f0;color:var(--suave)}
+table{width:100%;border-collapse:collapse}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--linha)}
+th{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--suave)}
+td.num,th.num{text-align:right}
+.tabela{overflow-x:auto;background:var(--branco);border:1px solid var(--linha);border-radius:14px}
+footer{padding:36px 0;color:var(--suave);font-size:13px}
+.faixa-teste{background:var(--aviso-cl);color:var(--aviso);text-align:center;font-size:13px;padding:6px 12px}
+{% block estilo %}{% endblock %}
+</style>
+</head>
+<body>
+{% if modo == 'simulado' %}<div class="faixa-teste">Modo de demonstração: pagamentos simulados, nenhum valor é cobrado.</div>{% endif %}
+<div class="w">
+  <nav class="topo">
+    <a class="logo" href="/">confer<span>ente</span></a>
+    <div class="links">
+    {% if conta %}
+      <a class="btn link" href="/app">Conferir notas</a>
+      <a class="btn link" href="/conta">Minha conta</a>
+      <form method="post" action="/sair"><button class="btn sec" type="submit">Sair</button></form>
+    {% else %}
+      <a class="btn link" href="/entrar">Entrar</a>
+      <a class="btn" href="/cadastro">Começar teste grátis</a>
+    {% endif %}
+    </div>
+  </nav>
+</div>
+{% block corpo %}{% endblock %}
+<div class="w"><footer>Conferente aponta inconsistências para análise do contador responsável; não substitui a análise tributária. © 2026</footer></div>
+{% block script %}{% endblock %}
+</body>
+</html>

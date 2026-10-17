@@ -92,7 +92,7 @@ def processar(notas, erros_leitura, ctx: Contexto | None = None, pCBS: Decimal |
     return Resultado(notas, erros_leitura, conferir(notas, ctx), simular(notas, ctx, pCBS=pCBS))
 
 
-def gerar_html(res: Resultado, escritorio: str = "") -> str:
+def gerar_html(res: Resultado, escritorio: str = "", voltar: str | None = None) -> str:
     agora = datetime.now(BRASILIA)
     periodo = ""
     if res.notas:
@@ -106,4 +106,5 @@ def gerar_html(res: Resultado, escritorio: str = "") -> str:
         gerado_em=agora.strftime("%d/%m/%Y %H:%M"),
         periodo=periodo,
         versao=__version__,
+        voltar=voltar,
     )

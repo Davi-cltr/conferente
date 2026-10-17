@@ -1,41 +1,28 @@
-<!doctype html>
-<html lang="pt-BR">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Conferente · Conferir notas</title>
-<style>
-{% include "_estilo.css" %}
-.caixa { background: var(--papel); border: 1px solid var(--linha); border-radius: 14px; padding: 28px; max-width: 620px; }
-label { display: block; font-weight: 600; margin: 18px 0 6px; }
-label small { font-weight: 400; color: var(--suave); }
-input[type=text] { width: 100%; padding: 10px 12px; border: 1px solid var(--linha); border-radius: 8px; font: inherit; }
-.soltar { border: 2px dashed var(--linha); border-radius: 12px; padding: 28px; text-align: center; color: var(--suave); }
-.soltar.ativo { border-color: var(--marca); background: var(--marca-claro); }
-button { margin-top: 22px; background: var(--marca); color: #fff; border: 0; border-radius: 8px; padding: 12px 20px; font: 600 15px/1 inherit; cursor: pointer; }
-button:disabled { opacity: .6; cursor: wait; }
-.erro-msg { background: var(--erro-claro); color: var(--erro); border-radius: 8px; padding: 10px 14px; margin-bottom: 12px; }
-</style>
-</head>
-<body>
-<div class="folha">
-  <header class="topo"><div class="marca">confer<span>ente</span></div><div class="meta">v{{ versao }}</div></header>
+{% extends "base.html" %}
+{% block titulo %}Conferir notas · Conferente{% endblock %}
+{% block estilo %}
+.soltar{border:2px dashed var(--linha);border-radius:12px;padding:28px;text-align:center;color:var(--suave)}
+.soltar.ativo{border-color:var(--marca);background:var(--marca-cl)}
+{% endblock %}
+{% block corpo %}
+<div class="w" style="max-width:680px">
   <h1>Conferir notas dos clientes</h1>
-  <p class="lead">Envie os XMLs de NF-e e NFC-e (ou um .zip com eles). Em poucos segundos você recebe o relatório com os erros de IBS/CBS por cliente. Os arquivos não ficam guardados.</p>
-  <form class="caixa" method="post" action="/conferir" enctype="multipart/form-data" id="f">
-    {% if erro %}<div class="erro-msg">{{ erro }}</div>{% endif %}
+  <p class="sub">Envie os XMLs de NF-e e NFC-e (ou um .zip com eles), de até {{ conta.limite_cnpjs }} clientes por vez. Os arquivos não ficam guardados.</p>
+  {% if conta.dias_restantes <= 5 %}<div class="msg aviso">Seu acesso vence em {{ conta.ativo_ate.strftime('%d/%m/%Y') }}. <a href="/conta">Renovar agora</a>.</div>{% endif %}
+  <form class="caixa campos" method="post" action="/conferir" enctype="multipart/form-data" id="f">
+    {% if erro %}<div class="msg erro">{{ erro }}</div>{% endif %}
     <div class="soltar" id="zona">
       <p><strong>Arraste os arquivos aqui</strong> ou</p>
       <input type="file" name="arquivos" id="arquivos" multiple accept=".xml,.zip" required>
       <p id="contagem"></p>
     </div>
-    <label for="escritorio">Nome do escritório <small>(aparece no relatório)</small></label>
-    <input type="text" id="escritorio" name="escritorio" maxlength="120" placeholder="Contabilidade Exemplo">
-    <label for="cbs">Alíquota estimada da CBS 2027 <small>(opcional, para a simulação)</small></label>
-    <input type="text" id="cbs" name="cbs_2027" inputmode="decimal" placeholder="ex.: 8,8">
-    <button type="submit" id="btn">Gerar relatório</button>
+    <div><label for="cbs">Alíquota estimada da CBS 2027 <small>(opcional, para a simulação)</small></label>
+    <input type="text" id="cbs" name="cbs_2027" inputmode="decimal" placeholder="ex.: 8,8"></div>
+    <button class="btn largo" type="submit" id="btn">Gerar relatório</button>
   </form>
 </div>
+{% endblock %}
+{% block script %}
 <script>
 const zona = document.getElementById('zona'), inp = document.getElementById('arquivos'), cont = document.getElementById('contagem');
 const mostrar = () => { cont.textContent = inp.files.length ? inp.files.length + ' arquivo(s) selecionado(s)' : ''; };
@@ -45,5 +32,4 @@ inp.addEventListener('change', mostrar);
 zona.addEventListener('drop', ev => { inp.files = ev.dataTransfer.files; mostrar(); });
 document.getElementById('f').addEventListener('submit', () => { const b = document.getElementById('btn'); b.disabled = true; b.textContent = 'Conferindo…'; });
 </script>
-</body>
-</html>
+{% endblock %}

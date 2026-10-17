@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block titulo %}Pagamento simulado · Conferente{% endblock %}
+{% block corpo %}
+<div class="w estreito">
+  <h1>Pagamento simulado</h1>
+  <p class="sub">Esta tela faz o papel do Mercado Pago enquanto o sistema está em modo de demonstração. Nenhum valor é cobrado.</p>
+  <div class="caixa" style="display:grid;gap:14px">
+    {% if pagamento.status != 'pendente' %}
+      <div class="msg {{ 'ok' if pagamento.status == 'aprovado' else 'aviso' }}">Este pagamento já está {{ {'aprovado':'aprovado','recusado':'recusado','cancelado':'cancelado'}[pagamento.status] }}.</div>
+      <a class="btn largo" href="/conta">Voltar para minha conta</a>
+    {% else %}
+      <div>
+        <div style="color:var(--suave);font-size:14px">Conferente · plano {{ pagamento.nome_plano }} (30 dias)</div>
+        <div style="font:700 36px/1.2 Fraunces,serif">{{ pagamento.valor|brl }}</div>
+        <div style="color:var(--suave);font-size:13px">Referência {{ pagamento.referencia }}</div>
+      </div>
+      <form method="post" action="/pagamento/simulado/{{ pagamento.referencia }}" style="display:grid;gap:10px;margin:0">
+        <button class="btn largo" name="acao" value="aprovar" type="submit">Simular pagamento aprovado (Pix)</button>
+        <button class="btn sec largo" name="acao" value="recusar" type="submit">Simular pagamento recusado</button>
+      </form>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

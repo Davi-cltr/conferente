@@ -19,7 +19,8 @@ RAIZ = Path(__file__).resolve().parents[2]
 def _carregar_env(caminho: Path) -> None:
     if not caminho.is_file():
         return
-    for linha in caminho.read_text(encoding="utf-8-sig")  # Bloco de Notas pode salvar com BOM.splitlines():
+    # utf-8-sig: o Bloco de Notas pode salvar com BOM
+    for linha in caminho.read_text(encoding="utf-8-sig").splitlines():
         linha = linha.strip()
         if not linha or linha.startswith("#") or "=" not in linha:
             continue

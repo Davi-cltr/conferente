@@ -4,9 +4,8 @@ from __future__ import annotations
 
 from collections import Counter, defaultdict
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from decimal import Decimal
-from zoneinfo import ZoneInfo
 
 from jinja2 import Environment, PackageLoader, select_autoescape
 
@@ -14,6 +13,10 @@ from . import __version__
 from .modelos import Achado, ErroLeitura, NotaFiscal, Severidade
 from .regras.motor import Contexto, _brl, _pct, conferir
 from .simulacao import Simulacao, simular
+
+# Horário de Brasília sem horário de verão desde 2019. Fuso fixo evita depender
+# da base de fusos do sistema, que o Windows não traz.
+BRASILIA = timezone(timedelta(hours=-3), "BRT")
 
 _env = Environment(
     loader=PackageLoader("conferente", "templates"),
@@ -90,7 +93,7 @@ def processar(notas, erros_leitura, ctx: Contexto | None = None, pCBS: Decimal |
 
 
 def gerar_html(res: Resultado, escritorio: str = "") -> str:
-    agora = datetime.now(ZoneInfo("America/Sao_Paulo"))
+    agora = datetime.now(BRASILIA)
     periodo = ""
     if res.notas:
         ini = min(n.emissao for n in res.notas)

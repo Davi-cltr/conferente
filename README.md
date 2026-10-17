@@ -31,6 +31,10 @@ Veja um relatório de exemplo em [docs/exemplo-relatorio.html](docs/exemplo-rela
 
 ## Como usar
 
+**No Windows, o jeito mais fácil:** dê dois cliques em `iniciar.bat`. Na primeira vez ele prepara o ambiente; depois abre o Conferente no navegador. Para testar, arraste os arquivos da pasta `tests/amostras`.
+
+Pela linha de comando:
+
 Requer Python 3.11+.
 
 ```bash

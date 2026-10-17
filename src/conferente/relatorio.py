@@ -103,7 +103,8 @@ def processar(notas, erros_leitura, ctx: Contexto | None = None, pCBS: Decimal |
     return Resultado(notas, erros_leitura, conferir(notas, ctx), simular(notas, ctx, pCBS=pCBS))
 
 
-def gerar_html(res: Resultado, escritorio: str = "", voltar: str | None = None) -> str:
+def gerar_html(res: Resultado, escritorio: str = "", voltar: str | None = None,
+               voltar_texto: str = "← Conferir outro lote") -> str:
     agora = datetime.now(BRASILIA)
     periodo = ""
     if res.notas:
@@ -118,4 +119,5 @@ def gerar_html(res: Resultado, escritorio: str = "", voltar: str | None = None) 
         periodo=periodo,
         versao=__version__,
         voltar=voltar,
+        voltar_texto=voltar_texto,
     )

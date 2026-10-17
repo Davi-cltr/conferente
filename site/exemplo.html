@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Conferência IBS/CBS · Exemplo com notas fictícias</title>
+<style>:root {
+  --tinta: #14211d;
+  --suave: #5b6b66;
+  --linha: #dfe5e2;
+  --fundo: #f6f8f7;
+  --papel: #ffffff;
+  --marca: #0f5f4b;
+  --marca-claro: #e3f1ec;
+  --erro: #b42318;
+  --erro-claro: #fdecea;
+  --aviso: #a15c07;
+  --aviso-claro: #fef4e4;
+  --info: #475467;
+  --info-claro: #eef1f4;
+  --ok: #067647;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--fundo);
+  color: var(--tinta);
+  font: 15px/1.5 "Inter", "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
+  font-variant-numeric: tabular-nums;
+}
+.folha { max-width: 980px; margin: 0 auto; padding: 32px 20px 64px; }
+header.topo { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; border-bottom: 2px solid var(--tinta); padding-bottom: 14px; margin-bottom: 28px; flex-wrap: wrap; }
+.marca { font-weight: 700; letter-spacing: -0.01em; font-size: 20px; }
+.marca span { color: var(--marca); }
+.meta { color: var(--suave); font-size: 13px; text-align: right; }
+h1 { font-size: 28px; letter-spacing: -0.02em; margin: 0 0 4px; }
+h2 { font-size: 19px; margin: 40px 0 12px; letter-spacing: -0.01em; }
+h3 { font-size: 16px; margin: 0; }
+p.lead { color: var(--suave); margin: 0 0 24px; max-width: 70ch; }
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
+.kpi { background: var(--papel); border: 1px solid var(--linha); border-radius: 10px; padding: 14px 16px; }
+.kpi b { display: block; font-size: 26px; letter-spacing: -0.02em; }
+.kpi small { color: var(--suave); }
+.kpi.erro b { color: var(--erro); }
+.kpi.aviso b { color: var(--aviso); }
+table { width: 100%; border-collapse: collapse; background: var(--papel); border: 1px solid var(--linha); border-radius: 10px; overflow: hidden; }
+th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--linha); vertical-align: top; }
+th { font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--suave); background: var(--fundo); }
+td.num, th.num { text-align: right; white-space: nowrap; }
+tr:last-child td { border-bottom: 0; }
+.selo { display: inline-block; font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 99px; white-space: nowrap; }
+.selo.erro { background: var(--erro-claro); color: var(--erro); }
+.selo.aviso { background: var(--aviso-claro); color: var(--aviso); }
+.selo.info { background: var(--info-claro); color: var(--info); }
+.selo.ok { background: var(--marca-claro); color: var(--ok); }
+.cliente { background: var(--papel); border: 1px solid var(--linha); border-radius: 12px; margin: 16px 0; overflow: hidden; break-inside: avoid-page; }
+.cliente > .cab { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 14px 18px; border-bottom: 1px solid var(--linha); flex-wrap: wrap; }
+.cliente .sub { color: var(--suave); font-size: 13px; }
+.achado { padding: 14px 18px; border-bottom: 1px solid var(--linha); display: grid; grid-template-columns: 70px 1fr; gap: 12px; }
+.achado:last-child { border-bottom: 0; }
+.achado .cod { font: 600 12px/1.4 ui-monospace, Menlo, monospace; color: var(--suave); padding-top: 3px; }
+.achado .tit { font-weight: 600; }
+.achado .onde { font-size: 13px; color: var(--suave); }
+.achado .fazer { font-size: 14px; margin-top: 6px; padding-left: 10px; border-left: 3px solid var(--marca); }
+.vazio { padding: 16px 18px; color: var(--ok); }
+.nota-rodape { color: var(--suave); font-size: 13px; margin-top: 40px; border-top: 1px solid var(--linha); padding-top: 14px; }
+.alerta { background: var(--aviso-claro); border: 1px solid #f5d9ab; border-radius: 10px; padding: 12px 16px; margin: 12px 0; }
+details summary { cursor: pointer; color: var(--marca); font-weight: 600; padding: 10px 18px; }
+@media (max-width: 640px) {
+  .achado { grid-template-columns: 1fr; gap: 4px; }
+  .meta { text-align: left; }
+  table { display: block; overflow-x: auto; }
+}
+@media print {
+  body { background: #fff; font-size: 12px; }
+  .folha { padding: 0; max-width: none; }
+  .nao-imprimir { display: none !important; }
+  details { display: block; }
+  details > summary { display: none; }
+}</style>
+</head>
+<body>
+<div class="folha">
+<p class="nao-imprimir" style="margin:0 0 16px"><a href="/" style="color:var(--marca);font-weight:600">← Voltar para o Conferente</a></p>  <header class="topo">
+    <div class="marca">confer<span>ente</span></div>
+    <div class="meta">
+<strong>Exemplo com notas fictícias</strong><br>      Gerado em 17/10/2026 16:40 · v0.1.0
+    </div>
+  </header>
+
+  <h1>Conferência de IBS e CBS</h1>
+  <p class="lead">
+    6 notas de 4 clientes
+· emissão de 10/09/2026 a 25/09/2026.
+    Erros podem gerar autuação, glosa de crédito ou imposto destacado a mais; avisos pedem conferência.
+  </p>
+
+  <section class="kpis">
+    <div class="kpi erro"><b>7</b><small>erros</small></div>
+    <div class="kpi aviso"><b>2</b><small>avisos</small></div>
+    <div class="kpi"><b>1</b><small>clientes sem pendência</small></div>
+    <div class="kpi"><b>5</b><small>itens de nota a revisar</small></div>
+  </section>
+
+  <div class="alerta"><strong>1 arquivo(s) não foram lidos.</strong> A lista está no fim do relatório.</div>
+
+  <h2>Clientes</h2>
+  <table>
+    <thead><tr><th>Cliente</th><th>Regime</th><th class="num">Notas</th><th class="num">Erros</th><th class="num">Avisos</th><th>Situação</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><strong>Loja Casa e Cia Ltda</strong><br><span class="sub">44.555.666/0001-54</span></td>
+        <td>Regime Normal</td>
+        <td class="num">2</td>
+        <td class="num">4</td>
+        <td class="num">0</td>
+        <td><span class="selo erro">Corrigir</span></td>
+      </tr>
+      <tr>
+        <td><strong>Clinica Saude Viva Ltda</strong><br><span class="sub">22.333.444/0001-72</span></td>
+        <td>Regime Normal</td>
+        <td class="num">1</td>
+        <td class="num">2</td>
+        <td class="num">0</td>
+        <td><span class="selo erro">Corrigir</span></td>
+      </tr>
+      <tr>
+        <td><strong>Mercadinho Bom Preco Ltda</strong><br><span class="sub">11.222.333/0001-81</span></td>
+        <td>Regime Normal</td>
+        <td class="num">2</td>
+        <td class="num">1</td>
+        <td class="num">0</td>
+        <td><span class="selo erro">Corrigir</span></td>
+      </tr>
+      <tr>
+        <td><strong>Padaria Pao Quente ME</strong><br><span class="sub">33.444.555/0001-63</span></td>
+        <td>Simples Nacional</td>
+        <td class="num">1</td>
+        <td class="num">0</td>
+        <td class="num">0</td>
+        <td><span class="selo ok">Em dia</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>O que encontramos</h2>
+  <article class="cliente">
+    <div class="cab">
+      <div>
+        <h3>Loja Casa e Cia Ltda</h3>
+<div class="sub">44.555.666/0001-54 · Regime Normal · 2 notas</div>      </div>
+      <div>
+<span class="selo erro">4 erros</span>      </div>
+    </div>
+    <div class="achado">
+      <div class="cod">CF001<br><span class="selo erro">erro</span></div>
+      <div>
+        <div class="tit">IBS/CBS não informado em 1 de 2 itens</div>
+        <div class="onde">NF 77/1 · 20/09/2026</div>
+        <div>Para Regime Normal, o grupo IBSCBS é obrigatório nas notas emitidas desde 03/08/2026. A SEFAZ adiou a rejeição automática (regra UB12-10), mas a obrigação legal continua valendo e a nota pode ser questionada depois.</div>
+<div class="fazer">Pedir ao cliente que atualize o emissor e preencha CST, cClassTrib e valores de IBS/CBS.</div>      </div>
+    </div>
+    <div class="achado">
+      <div class="cod">CF003<br><span class="selo erro">erro</span></div>
+      <div>
+        <div class="tit">cClassTrib 200035 não pertence ao CST 000</div>
+        <div class="onde">NF 77/1 · item 2 (Toalha de banho) · 20/09/2026</div>
+        <div>Os 3 primeiros dígitos do cClassTrib devem ser iguais ao CST. Um dos dois está errado, e isso muda alíquota, redução e crédito.</div>
+<div class="fazer">Conferir qual dos dois códigos reflete a operação e corrigir o outro.</div>      </div>
+    </div>
+    <div class="achado">
+      <div class="cod">CF020<br><span class="selo erro">erro</span></div>
+      <div>
+        <div class="tit">Alíquota de CBS fora do padrão de 2026</div>
+        <div class="onde">NF 78/1 · item 1 (Livro de receitas) · 21/09/2026</div>
+        <div>Em 2026 a alíquota de CBS é 0,9%; a nota usa 8,8%. Reduções de alíquota vão no grupo gRed, não na alíquota cheia.</div>
+<div class="fazer">Ajustar a alíquota de CBS no emissor.</div>      </div>
+    </div>
+    <div class="achado">
+      <div class="cod">CF040<br><span class="selo erro">erro</span></div>
+      <div>
+        <div class="tit">Imposto destacado em item com CST 410 (Imunidade e não incidência)</div>
+        <div class="onde">NF 78/1 · item 2 (Livro infantil) · 21/09/2026</div>
+        <div>O CST indica que não há IBS/CBS a pagar, mas o item destaca R$ 0,40.</div>
+<div class="fazer">Remover os valores ou corrigir o CST.</div>      </div>
+    </div>
+  </article>
+  <article class="cliente">
+    <div class="cab">
+      <div>
+        <h3>Clinica Saude Viva Ltda</h3>
+<div class="sub">22.333.444/0001-72 · Regime Normal · 1 nota</div>      </div>
+      <div>
+<span class="selo erro">2 erros</span>      </div>
+    </div>
+    <div class="achado">
+      <div class="cod">CF012<br><span class="selo erro">erro</span></div>
+      <div>
+        <div class="tit">Valor de CBS diferente do cálculo</div>
+        <div class="onde">NF 501/1 · item 1 (Consulta medica) · 15/09/2026</div>
+        <div>Base R$ 350,00 × 0,36% = R$ 1,26; a nota destaca R$ 3,15 (diferença de R$ 1,89).</div>
+<div class="fazer">Verificar arredondamento e base de cálculo no emissor.</div>      </div>
+    </div>
+    <div class="achado">
+      <div class="cod">CF050<br><span class="selo erro">erro</span></div>
+      <div>
+        <div class="tit">Total de CBS da nota diferente da soma dos itens</div>
+        <div class="onde">NF 501/1 · 15/09/2026</div>
+        <div>Soma dos itens: R$ 3,15; total informado: R$ 4,15.</div>
+<div class="fazer">Corrigir a totalização no emissor.</div>      </div>
+    </div>
+  </article>
+  <article class="cliente">
+    <div class="cab">
+      <div>
+        <h3>Mercadinho Bom Preco Ltda</h3>
+<div class="sub">11.222.333/0001-81 · Regime Normal · 2 notas</div>      </div>
+      <div>
+<span class="selo erro">1 erro</span>      </div>
+    </div>
+    <div class="achado">
+      <div class="cod">CF030<br><span class="selo erro">erro</span></div>
+      <div>
+        <div class="tit">Redução de 60% não aplicada (CBS e IBS estadual)</div>
+        <div class="onde">NF 1002/1 · item 1 (Detergente liquido 500ml) · 12/09/2026</div>
+        <div>A classificação 200035 (Higiene pessoal e limpeza - Anexo VIII (art. 136)) prevê redução de 60%, mas a nota aplicou 0%: o cliente está destacando imposto a mais (R$ 0,02 neste item, nas alíquotas de teste). Hoje é um erro de cadastro; com as alíquotas cheias, vira preço mais alto ou imposto pago a mais.</div>
+<div class="fazer">Aplicar a redução no cadastro do produto (grupo gRed com o pRedAliq correto).</div>      </div>
+    </div>
+  </article>
+  <article class="cliente">
+    <div class="cab">
+      <div>
+        <h3>Padaria Pao Quente ME</h3>
+<div class="sub">33.444.555/0001-63 · Simples Nacional · 1 nota</div>      </div>
+      <div>
+<span class="selo ok">Nenhuma pendência</span>      </div>
+    </div>
+    <details>
+      <summary>1 observação(ões) informativa(s)</summary>
+      <div class="achado">
+        <div class="cod">CF001<br><span class="selo info">info</span></div>
+        <div><div class="tit">Nota ainda sem IBS/CBS (dentro do prazo)</div><div class="onde">NF 3001/1</div><div>Para Simples Nacional, a obrigação começa em 04/01/2027.</div></div>
+      </div>
+    </details>
+  </article>
+  <article class="cliente">
+    <div class="cab">
+      <div>
+        <h3>Conferências entre notas</h3>
+      </div>
+      <div>
+<span class="selo aviso">2 avisos</span>      </div>
+    </div>
+    <div class="achado">
+      <div class="cod">CF060<br><span class="selo aviso">aviso</span></div>
+      <div>
+        <div class="tit">NCM 34011190 com 2 classificações diferentes em Mercadinho Bom Preco Ltda</div>
+        <div class="onde">Lote</div>
+        <div>O mesmo NCM foi classificado com cClassTrib diferentes pelo mesmo emitente. Pode ser correto (produtos distintos no mesmo NCM), mas costuma indicar cadastro inconsistente. 200035: NF 1002 item 2; 000001: NF 1001 item 4.</div>
+<div class="fazer">Revisar o cadastro de produtos desse NCM com o cliente.</div>      </div>
+    </div>
+    <div class="achado">
+      <div class="cod">CF060<br><span class="selo aviso">aviso</span></div>
+      <div>
+        <div class="tit">NCM 49019900 com 2 classificações diferentes em Loja Casa e Cia Ltda</div>
+        <div class="onde">Lote</div>
+        <div>O mesmo NCM foi classificado com cClassTrib diferentes pelo mesmo emitente. Pode ser correto (produtos distintos no mesmo NCM), mas costuma indicar cadastro inconsistente. 000001: NF 78 item 1; 410008: NF 78 item 2.</div>
+<div class="fazer">Revisar o cadastro de produtos desse NCM com o cliente.</div>      </div>
+    </div>
+  </article>
+
+  <h2>Simulação 2027: PIS/Cofins de hoje × CBS + IBS</h2>
+  <p class="lead">Mesmas vendas deste lote, com CBS de 8,8% e IBS de 0,1%, aplicando as reduções de cada classificação. Não considera créditos nem regimes específicos.</p>
+  <table>
+    <thead><tr><th>Cliente</th><th class="num">Base</th><th class="num">PIS/Cofins nas notas</th><th class="num">CBS 2027</th><th class="num">IBS 2027</th><th class="num">Diferença</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><strong>Clinica Saude Viva Ltda</strong><br><span class="sub">Regime Normal</span></td>
+        <td class="num">R$ 350,00</td>
+        <td class="num">R$ 32,38</td>
+<td class="num">R$ 12,32</td>        <td class="num">R$ 0,14</td>
+<td class="num">R$ -19,92</td>      </tr>
+      <tr>
+        <td><strong>Loja Casa e Cia Ltda</strong><br><span class="sub">Regime Normal · 1 de 4 itens sem classificação (simulados sem redução)</span></td>
+        <td class="num">R$ 319,70</td>
+        <td class="num">R$ 33,25</td>
+<td class="num">R$ 25,50</td>        <td class="num">R$ 0,29</td>
+<td class="num">R$ -7,46</td>      </tr>
+      <tr>
+        <td><strong>Mercadinho Bom Preco Ltda</strong><br><span class="sub">Regime Normal</span></td>
+        <td class="num">R$ 50,45</td>
+        <td class="num">R$ 4,68</td>
+<td class="num">R$ 1,47</td>        <td class="num">R$ 0,01</td>
+<td class="num">R$ -3,20</td>      </tr>
+      <tr>
+        <td><strong>Padaria Pao Quente ME</strong><br><span class="sub">Simples Nacional · 1 de 1 itens sem classificação (simulados sem redução) · no Simples, CBS/IBS seguem no DAS, salvo opção pelo regime regular</span></td>
+        <td class="num">R$ 18,90</td>
+        <td class="num">R$ 1,75</td>
+<td class="num">R$ 1,66</td>        <td class="num">R$ 0,02</td>
+<td class="num">R$ -0,07</td>      </tr>
+    </tbody>
+  </table>
+
+  <h2>Arquivos não lidos</h2>
+  <table>
+    <thead><tr><th>Arquivo</th><th>Motivo</th></tr></thead>
+    <tbody><tr><td>corrompido.xml</td><td>XML inválido: Premature end of data in tag NFe line 1, line 1, column 25</td></tr></tbody>
+  </table>
+
+  <p class="nota-rodape">
+    Conferência automática baseada na NT 2025.002 (NF-e/NFC-e), no Informe Técnico de cClassTrib e na LC 214/2025, com parâmetros revisados em 17/10/2026.
+    O relatório aponta inconsistências para análise do contador responsável; não substitui a análise tributária nem garante a classificação correta de cada produto.
+    Cada código de achado (CFxxx) está descrito com sua fonte em docs/regras.md.
+  </p>
+</div>
+</body>
+</html>

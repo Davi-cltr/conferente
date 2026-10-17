@@ -14,7 +14,7 @@ Objetivo: descobrir, com dinheiro real na mesa, se escritórios contábeis pagam
 | Semana | O que fazer | Entregável |
 |---|---|---|
 | 1–2 | 15 entrevistas com donos de escritórios de 5 a 30 pessoas ([roteiro](roteiro-entrevistas.md)) | Planilha de entrevistas com citações |
-| 2 | Publicar a [landing](../landing/index.html) com pré-venda de R$ 300/mês para os 20 primeiros | Lista de espera |
+| 2 | Publicar a [vitrine](../site/README.md) no Netlify, com o plano Fundador de R$ 49/mês para os 20 primeiros | Lista de espera |
 | 3–6 | Piloto concierge com 5 escritórios: eles mandam um lote de XMLs, você roda o Conferente, revisa com um especialista tributário e devolve o relatório em 48h | 5 relatórios entregues, achados reais anotados |
 | 7–8 | Pedir o pagamento, medir e decidir | Decisão: seguir, mudar ou parar |
 
@@ -44,7 +44,7 @@ Comece por Campinas, Americana, Sumaré e Nova Odessa: dá para visitar pessoalm
 | Notas processadas por escritório | contagem no relatório | > 500 |
 | Achados confirmados pelo contador | anotação por achado: real / falso positivo | > 70% reais |
 | Tempo economizado | pergunta direta: "quanto tempo levaria conferindo à mão?" | > 4 h/mês |
-| Disposição a pagar | proposta de R$ 300/mês | 3 de 5 |
+| Disposição a pagar | proposta de R$ 49/mês (plano Fundador) | 3 de 5 |
 
 ## Orçamento
 

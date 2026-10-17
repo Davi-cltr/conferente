@@ -48,10 +48,10 @@ class Plano:
 PLANOS: dict[str, Plano] = {
     p.codigo: p
     for p in (
-        Plano("fundador", "Fundador", Decimal("300.00"), 150, "Preço travado por 12 meses · 20 vagas"),
-        Plano("essencial", "Essencial", Decimal("290.00"), 50),
-        Plano("escritorio", "Escritório", Decimal("490.00"), 150),
-        Plano("ampliado", "Ampliado", Decimal("890.00"), 400),
+        Plano("fundador", "Fundador", Decimal("49.00"), 50, "Preço travado por 12 meses · 20 vagas"),
+        Plano("essencial", "Essencial", Decimal("59.00"), 30),
+        Plano("escritorio", "Escritório", Decimal("99.00"), 100),
+        Plano("ampliado", "Ampliado", Decimal("179.00"), 300),
     )
 }
 VAGAS_FUNDADOR = 20

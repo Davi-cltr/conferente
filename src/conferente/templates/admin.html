@@ -16,6 +16,7 @@
     <h1>Administração</h1>
     <form method="post" action="/admin/sair" style="margin:0"><button class="btn sec" type="submit">Sair da administração</button></form>
   </div>
+  {% for a in avisos %}<div class="msg aviso">{{ a }}</div>{% endfor %}
   {% if ok == 'confirmado' %}<div class="msg ok">Pagamento confirmado. O escritório já tem mais 30 dias de acesso.</div>{% endif %}
   {% if ok == 'recusado' %}<div class="msg aviso">Pagamento marcado como recusado.</div>{% endif %}
 

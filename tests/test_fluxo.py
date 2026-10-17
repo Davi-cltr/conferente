@@ -19,8 +19,8 @@ def cliente(tmp_path, monkeypatch):
         yield c
 
 
-def cadastrar(c, email="ana@contabil.com.br", **extra):
-    dados = dict(escritorio="Contábil Teste", cnpj=CNPJ_OK, responsavel="Ana", email=email,
+def cadastrar(c, email="ana@contabil.com.br", cnpj=CNPJ_OK, **extra):
+    dados = dict(escritorio="Contábil Teste", cnpj=cnpj, responsavel="Ana", email=email,
                  whatsapp="19999999999", senha="senha-forte-1", **extra)
     return c.post("/cadastro", data=dados, follow_redirects=False)
 
@@ -105,7 +105,7 @@ def test_outra_conta_nao_ve_pagamento(cliente):
     link = cliente.post("/assinar", data={"plano": "essencial"}, follow_redirects=False).headers["location"]
     ref = link.rsplit("/", 1)[1]
     cliente.post("/sair")
-    cadastrar(cliente, email="outro@x.com.br")
+    cadastrar(cliente, email="outro@x.com.br", cnpj="11.444.777/0001-61")
     assert cliente.get(f"/pagamento/{ref}/situacao").status_code == 404
     r = cliente.post(link, data={"acao": "aprovar"}, follow_redirects=False)
     assert r.headers["location"] == "/conta"
@@ -143,7 +143,7 @@ def test_mercadopago_confere_valor(monkeypatch, tmp_path):
     p = pagamentos.criar_cobranca(conta, "essencial")
     assert p.link.startswith("https://www.mercadopago.com.br/")
     assert pagamentos.atualizar(p.referencia).status == "pendente"
-    valor_pago = 290.00
+    valor_pago = 59.00
     assert pagamentos.atualizar(p.referencia).status == "aprovado"
     assert contas.obter(conta.id).plano == "essencial"
 
@@ -187,8 +187,8 @@ def test_fluxo_pix_manual(cliente_pix):
     assert link.startswith("/pagamento/pix/CF-")
     ref = link.rsplit("/", 1)[1]
     pagina = c.get(link).text
-    assert "Pagar com Pix" in pagina and "R$ 300,00" in pagina
-    assert "br.gov.bcb.pix" in pagina and "5406300.00" in pagina  # valor dentro do código
+    assert "Pagar com Pix" in pagina and "R$ 49,00" in pagina
+    assert "br.gov.bcb.pix" in pagina and "540549.00" in pagina  # valor dentro do código
     assert "Já paguei" in pagina
 
     # escritório avisa que pagou

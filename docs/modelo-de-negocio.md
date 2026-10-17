@@ -12,10 +12,10 @@ Escritórios de contabilidade com 5 a 30 pessoas que atendem empresas de vários
 
 | Plano | CNPJs conferidos | Preço/mês |
 |---|---|---|
-| Fundador (20 primeiros) | até 150 | R$ 300, preço travado por 12 meses |
-| Essencial | até 50 | R$ 290 |
-| Escritório | até 150 | R$ 490 |
-| Ampliado | até 400 | R$ 890 |
+| Fundador (20 primeiros) | até 50 | R$ 49, preço travado por 12 meses |
+| Essencial | até 30 | R$ 59 |
+| Escritório | até 100 | R$ 99 |
+| Ampliado | até 300 | R$ 179 |
 
 Referência: o escritório típico gasta mais de R$ 1.000/mês em software; o relatório substitui horas de conferência manual que o escritório não cobra do cliente.
 
@@ -23,8 +23,9 @@ Receita extra possível: o escritório revende um "check-up da reforma" ao clien
 
 ## Contas de referência
 
-- Meta de 3 anos do relatório original: 1.000 escritórios × R$ 400/mês ≈ R$ 4,8 mi/ano de receita recorrente.
-- Ponto de equilíbrio de uma pessoa em tempo integral (custo R$ 12 mil/mês com especialista tributário em meio período): ~35 escritórios no plano Escritório.
+- Com os preços de entrada: 1.000 escritórios × R$ 80/mês em média ≈ R$ 960 mil/ano de receita recorrente.
+- Ponto de equilíbrio de uma pessoa em tempo integral (custo R$ 12 mil/mês com especialista tributário em meio período): cerca de 120 escritórios no plano Escritório (R$ 99).
+- Os preços baixos servem para entrar no mercado. Depois que os 20 Fundadores estiverem usando, vale reajustar os planos para novos clientes com base no tempo que o Conferente economiza.
 
 ## Custos principais
 

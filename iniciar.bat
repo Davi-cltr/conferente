@@ -19,7 +19,14 @@ if not exist ".venv\Scripts\python.exe" (
   echo  Primeira execucao: preparando o ambiente ^(1 a 2 minutos^)...
   python -m venv .venv || goto erro
   ".venv\Scripts\python.exe" -m pip install --quiet --upgrade pip
+)
+
+rem Reinstala quando o pyproject.toml muda (nova versao do Conferente)
+fc /b pyproject.toml ".venv\pyproject.instalado" >nul 2>nul
+if errorlevel 1 (
+  echo  Atualizando o Conferente...
   ".venv\Scripts\python.exe" -m pip install --quiet -e . || goto erro
+  copy /y pyproject.toml ".venv\pyproject.instalado" >nul
 )
 
 echo.

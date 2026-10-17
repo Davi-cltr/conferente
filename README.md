@@ -42,6 +42,8 @@ Sem configuração, os pagamentos são **simulados**. Para receber de verdade:
 
 Para testar a conferência, use os arquivos da pasta `tests/amostras`.
 
+**Vitrine para mostrar a clientes:** a pasta `site/` é uma página estática (apresentação, planos, relatório de exemplo e formulário de teste grátis) pronta para o Netlify. Passo a passo em [site/README.md](site/README.md).
+
 Pela linha de comando:
 
 Requer Python 3.11+.
@@ -87,7 +89,8 @@ src/conferente/
   relatorio.py       relatório HTML
   web/app.py         upload web (FastAPI), nada é gravado em disco
 docs/                regras, plano de validação, roteiro de entrevistas, modelo de negócio
-landing/             página de pré-venda
+site/                vitrine estática para o Netlify (veja site/README.md)
+scripts/             gerar_vitrine.py: atualiza o relatório de exemplo da vitrine
 ```
 
 ## Manutenção das regras

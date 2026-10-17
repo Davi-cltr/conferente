@@ -17,6 +17,7 @@ from decimal import Decimal, InvalidOperation
 from fastapi import FastAPI, Form, Request, UploadFile
 from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
+from starlette.exceptions import HTTPException as StarletteHTTPException
 from importlib import resources
 
 from .. import __version__, config, contas, db, pagamentos
@@ -40,6 +41,26 @@ app = FastAPI(title="Conferente", version=__version__, docs_url=None, redoc_url=
 # qrcode.js: biblioteca qrcode-generator 1.4.4 (Kazuhiko Arase, licença MIT), guardada no projeto
 # para o QR Code do Pix funcionar mesmo sem internet.
 app.mount("/estaticos", StaticFiles(directory=str(resources.files("conferente").joinpath("estaticos"))), name="estaticos")
+
+
+# ---------------------------------------------------------------- páginas de erro
+
+
+@app.exception_handler(StarletteHTTPException)
+async def _erro_http(request: Request, exc: StarletteHTTPException):
+    if exc.status_code == 404:
+        return _pagina("erro.html", request, status=404, titulo="Página não encontrada",
+                       texto="O endereço que você abriu não existe. Confira o link ou volte para o início.")
+    return _pagina("erro.html", request, status=exc.status_code, titulo="Não foi possível abrir esta página",
+                   texto=str(exc.detail))
+
+
+@app.exception_handler(Exception)
+async def _erro_interno(request: Request, exc: Exception):
+    import logging
+    logging.getLogger("conferente").exception("erro inesperado em %s", request.url.path)
+    return _pagina("erro.html", request, status=500, titulo="Algo deu errado",
+                   texto="Tivemos um erro inesperado. Tente de novo em instantes. Se continuar, avise o suporte.")
 
 
 # ---------------------------------------------------------------- utilidades
@@ -88,7 +109,7 @@ def saude():
 @app.get("/cadastro", response_class=HTMLResponse)
 def cadastro_form(request: Request, plano: str = ""):
     if _conta(request):
-        return _ir("/conta")
+        return _ir("/conta" + (f"?plano={plano}" if plano in config.PLANOS else ""))
     return _pagina("cadastro.html", request, erro=None, dados={}, plano=plano if plano in config.PLANOS else "")
 
 
@@ -292,8 +313,17 @@ def admin(request: Request, ok: str = ""):
         return _pagina("admin_entrar.html", request, erro=None, desligado=True)
     if not _admin(request):
         return _pagina("admin_entrar.html", request, erro=None, desligado=False)
+    avisos = []
+    if config.modo_pagamento() == "pix":
+        faltando = [n for n, v in (("PIX_NOME", config.pix_nome()), ("PIX_CIDADE", config.pix_cidade())) if not v]
+        if faltando:
+            avisos.append(f"Preencha {' e '.join(faltando)} no configuracao.txt. Sem isso, o banco de quem paga "
+                          "mostra um nome genérico no Pix e o escritório pode desconfiar.")
+    elif config.modo_pagamento() == "simulado":
+        avisos.append("Os pagamentos estão em modo de demonstração. Para receber por Pix, preencha PIX_CHAVE, "
+                      "PIX_NOME e PIX_CIDADE no configuracao.txt.")
     return _pagina("admin.html", request, conferir=pagamentos.para_conferir(), recentes=pagamentos.recentes(),
-                   contas_lista=contas.todas(), ok=ok, pix_chave=config.pix_chave())
+                   contas_lista=contas.todas(), ok=ok, pix_chave=config.pix_chave(), avisos=avisos)
 
 
 @app.post("/admin")
@@ -348,7 +378,7 @@ def app_pagina(request: Request):
 
 
 @app.post("/conferir", response_class=HTMLResponse)
-async def conferir(request: Request, arquivos: list[UploadFile], cbs_2027: str = Form("")):
+async def conferir(request: Request, arquivos: list[UploadFile] | None = None, cbs_2027: str = Form("")):
     conta = _conta(request)
     if conta is None:
         return _ir("/entrar")
@@ -358,6 +388,9 @@ async def conferir(request: Request, arquivos: list[UploadFile], cbs_2027: str =
     def erro(msg: str, status: int = 400):
         return _pagina("upload.html", request, status=status, conta=conta, erro=msg)
 
+    arquivos = [f for f in (arquivos or []) if f.filename]
+    if not arquivos:
+        return erro("Escolha pelo menos um arquivo .xml ou .zip para conferir.")
     if len(arquivos) > LIMITE_ARQUIVOS:
         return erro(f"Envie no máximo {LIMITE_ARQUIVOS} arquivos por vez (ou junte-os em um .zip).")
     pCBS = None

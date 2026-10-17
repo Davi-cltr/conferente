@@ -7,6 +7,7 @@ import hashlib
 import hmac
 import re
 import secrets
+import sqlite3
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta, timezone
 
@@ -126,11 +127,17 @@ def criar_conta(escritorio, cnpj, responsavel, email, whatsapp, senha) -> Conta:
     with transacao() as con:
         if con.execute("SELECT 1 FROM contas WHERE email = ?", (email,)).fetchone():
             raise ErroCadastro("Já existe uma conta com este e-mail. Use “Entrar”.")
-        cur = con.execute(
-            "INSERT INTO contas (escritorio, cnpj, responsavel, email, whatsapp, senha_hash, ativo_ate) "
-            "VALUES (?, ?, ?, ?, ?, ?, ?)",
-            (escritorio, cnpj, responsavel, email, so_digitos(whatsapp)[:13], hash_senha(senha), ativo_ate.isoformat()),
-        )
+        if con.execute("SELECT 1 FROM contas WHERE cnpj = ?", (cnpj,)).fetchone():
+            raise ErroCadastro("Este CNPJ já tem uma conta no Conferente. Entre com o e-mail cadastrado "
+                               "ou fale com o suporte para trocar o responsável.")
+        try:
+            cur = con.execute(
+                "INSERT INTO contas (escritorio, cnpj, responsavel, email, whatsapp, senha_hash, ativo_ate) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?)",
+                (escritorio, cnpj, responsavel, email, so_digitos(whatsapp)[:13], hash_senha(senha), ativo_ate.isoformat()),
+            )
+        except sqlite3.IntegrityError:  # dois cadastros iguais ao mesmo tempo
+            raise ErroCadastro("Já existe uma conta com este e-mail. Use “Entrar”.") from None
         return obter(cur.lastrowid, con)
 
 

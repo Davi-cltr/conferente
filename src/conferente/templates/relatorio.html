@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Conferência IBS/CBS{% if escritorio %} · {{ escritorio }}{% endif %}</title>
+<style>{% include "_estilo.css" %}</style>
+</head>
+<body>
+<div class="folha">
+  <header class="topo">
+    <div class="marca">confer<span>ente</span></div>
+    <div class="meta">
+      {% if escritorio %}<strong>{{ escritorio }}</strong><br>{% endif %}
+      Gerado em {{ gerado_em }} · v{{ versao }}
+    </div>
+  </header>
+
+  <h1>Conferência de IBS e CBS</h1>
+  <p class="lead">
+    {{ res.notas|length }} nota{{ 's' if res.notas|length != 1 }} de {{ grupos|selectattr('cnpj')|list|length }} cliente{{ 's' if grupos|selectattr('cnpj')|list|length != 1 }}
+    {% if periodo %}· emissão de {{ periodo }}{% endif %}.
+    Erros podem gerar autuação, glosa de crédito ou imposto destacado a mais; avisos pedem conferência.
+  </p>
+
+  <section class="kpis">
+    <div class="kpi erro"><b>{{ res.contagem.get('erro', 0) }}</b><small>erros</small></div>
+    <div class="kpi aviso"><b>{{ res.contagem.get('aviso', 0) }}</b><small>avisos</small></div>
+    <div class="kpi"><b>{{ grupos|selectattr('status', 'equalto', 'ok')|selectattr('cnpj')|list|length }}</b><small>clientes sem pendência</small></div>
+    <div class="kpi"><b>{{ res.itens_a_revisar }}</b><small>itens de nota a revisar</small></div>
+  </section>
+
+  {% if res.erros_leitura %}
+  <div class="alerta"><strong>{{ res.erros_leitura|length }} arquivo(s) não foram lidos.</strong> A lista está no fim do relatório.</div>
+  {% endif %}
+
+  <h2>Clientes</h2>
+  <table>
+    <thead><tr><th>Cliente</th><th>Regime</th><th class="num">Notas</th><th class="num">Erros</th><th class="num">Avisos</th><th>Situação</th></tr></thead>
+    <tbody>
+    {% for g in grupos if g.cnpj %}
+      <tr>
+        <td><strong>{{ g.nome }}</strong><br><span class="sub">{{ g.cnpj|cnpj }}</span></td>
+        <td>{{ g.regime }}</td>
+        <td class="num">{{ g.notas }}</td>
+        <td class="num">{{ g.erros }}</td>
+        <td class="num">{{ g.avisos }}</td>
+        <td>{% if g.status == 'erro' %}<span class="selo erro">Corrigir</span>{% elif g.status == 'aviso' %}<span class="selo aviso">Conferir</span>{% else %}<span class="selo ok">Em dia</span>{% endif %}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+
+  <h2>O que encontramos</h2>
+  {% for g in grupos %}
+  {% set relevantes = g.achados|rejectattr('severidade.value', 'equalto', 'info')|list %}
+  {% set infos = g.achados|selectattr('severidade.value', 'equalto', 'info')|list %}
+  <article class="cliente">
+    <div class="cab">
+      <div>
+        <h3>{{ g.nome }}</h3>
+        {% if g.cnpj %}<div class="sub">{{ g.cnpj|cnpj }} · {{ g.regime }} · {{ g.notas }} nota{{ 's' if g.notas != 1 }}</div>{% endif %}
+      </div>
+      <div>
+        {% if g.erros %}<span class="selo erro">{{ g.erros }} erro{{ 's' if g.erros != 1 }}</span>{% endif %}
+        {% if g.avisos %}<span class="selo aviso">{{ g.avisos }} aviso{{ 's' if g.avisos != 1 }}</span>{% endif %}
+        {% if g.status == 'ok' %}<span class="selo ok">Nenhuma pendência</span>{% endif %}
+      </div>
+    </div>
+    {% for a in relevantes %}
+    <div class="achado">
+      <div class="cod">{{ a.codigo }}<br><span class="selo {{ a.severidade.value }}">{{ a.severidade.value }}</span></div>
+      <div>
+        <div class="tit">{{ a.titulo }}</div>
+        <div class="onde">{{ a.onde }}{% if a.nota %} · {{ a.nota.emissao.strftime('%d/%m/%Y') }}{% endif %}</div>
+        <div>{{ a.explicacao }}</div>
+        {% if a.o_que_fazer %}<div class="fazer">{{ a.o_que_fazer }}</div>{% endif %}
+      </div>
+    </div>
+    {% endfor %}
+    {% if not relevantes and not infos %}<div class="vazio">Todas as notas passaram nas conferências.</div>{% endif %}
+    {% if infos %}
+    <details>
+      <summary>{{ infos|length }} observação(ões) informativa(s)</summary>
+      {% for a in infos %}
+      <div class="achado">
+        <div class="cod">{{ a.codigo }}<br><span class="selo info">info</span></div>
+        <div><div class="tit">{{ a.titulo }}</div><div class="onde">{{ a.onde }}</div><div>{{ a.explicacao }}</div></div>
+      </div>
+      {% endfor %}
+    </details>
+    {% endif %}
+  </article>
+  {% endfor %}
+
+  <h2>Simulação {{ res.simulacao.ano }}: PIS/Cofins de hoje × CBS + IBS</h2>
+  {% if res.simulacao.disponivel %}
+  <p class="lead">Mesmas vendas deste lote, com CBS de {{ res.simulacao.pCBS|pct }} e IBS de {{ res.simulacao.pIBS|pct }}, aplicando as reduções de cada classificação. Não considera créditos nem regimes específicos.</p>
+  {% else %}
+  <div class="alerta">A alíquota da CBS de {{ res.simulacao.ano }} ainda não foi fixada (o Senado tem até 15/12/2026). A tabela mostra só o IBS ({{ res.simulacao.pIBS|pct }}). Para simular com uma alíquota estimada, use <code>--cbs-2027</code>.</div>
+  {% endif %}
+  <table>
+    <thead><tr><th>Cliente</th><th class="num">Base</th><th class="num">PIS/Cofins nas notas</th>{% if res.simulacao.disponivel %}<th class="num">CBS {{ res.simulacao.ano }}</th>{% endif %}<th class="num">IBS {{ res.simulacao.ano }}</th>{% if res.simulacao.disponivel %}<th class="num">Diferença</th>{% endif %}</tr></thead>
+    <tbody>
+    {% for c in res.simulacao.clientes %}
+      <tr>
+        <td><strong>{{ c.nome }}</strong><br><span class="sub">{{ c.regime }}{% if c.itens_sem_classificacao %} · {{ c.itens_sem_classificacao }} de {{ c.itens }} itens sem classificação (simulados sem redução){% endif %}{% if c.regime.startswith('Simples') or c.regime == 'MEI' %} · no Simples, CBS/IBS seguem no DAS, salvo opção pelo regime regular{% endif %}</span></td>
+        <td class="num">{{ c.base|brl }}</td>
+        <td class="num">{{ c.pis_cofins_atual|brl }}</td>
+        {% if res.simulacao.disponivel %}<td class="num">{{ c.cbs_2027|brl }}</td>{% endif %}
+        <td class="num">{{ c.ibs_2027|brl }}</td>
+        {% if res.simulacao.disponivel %}<td class="num">{{ c.variacao|brl }}</td>{% endif %}
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+
+  {% if res.erros_leitura %}
+  <h2>Arquivos não lidos</h2>
+  <table>
+    <thead><tr><th>Arquivo</th><th>Motivo</th></tr></thead>
+    <tbody>{% for e in res.erros_leitura %}<tr><td>{{ e.arquivo }}</td><td>{{ e.motivo }}</td></tr>{% endfor %}</tbody>
+  </table>
+  {% endif %}
+
+  <p class="nota-rodape">
+    Conferência automática baseada na NT 2025.002 (NF-e/NFC-e), no Informe Técnico de cClassTrib e na LC 214/2025, com parâmetros revisados em 17/10/2026.
+    O relatório aponta inconsistências para análise do contador responsável; não substitui a análise tributária nem garante a classificação correta de cada produto.
+    Cada código de achado (CFxxx) está descrito com sua fonte em docs/regras.md.
+  </p>
+</div>
+</body>
+</html>

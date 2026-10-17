@@ -6,7 +6,7 @@ venv/
 .pytest_cache/
 build/
 dist/
-relatorio.html
+/relatorio.html
 *.json.out
 .env
 # XMLs reais de clientes nunca entram no repositório

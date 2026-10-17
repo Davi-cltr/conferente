@@ -146,3 +146,80 @@ def test_mercadopago_confere_valor(monkeypatch, tmp_path):
     valor_pago = 290.00
     assert pagamentos.atualizar(p.referencia).status == "aprovado"
     assert contas.obter(conta.id).plano == "essencial"
+
+
+# ---------------------------------------------------------------- Pix manual
+
+
+def test_pix_codigo_oficial():
+    from conferente.pix import copia_e_cola
+    # Exemplo do Manual de Padrões para Iniciação do Pix (Banco Central)
+    assert copia_e_cola("123e4567-e12b-12d1-a456-426655440000", "Fulano de Tal", "BRASILIA") == (
+        "00020126580014br.gov.bcb.pix0136123e4567-e12b-12d1-a456-4266554400005204000053039865802BR"
+        "5913Fulano de Tal6008BRASILIA62070503***63041D3D")
+
+
+def test_pix_chaves():
+    from conferente.pix import normalizar_chave
+    assert normalizar_chave("123.456.789-09") == "12345678909"
+    assert normalizar_chave("+55 (19) 99999-1234") == "+5519999991234"
+    assert normalizar_chave("Davi@Exemplo.com") == "davi@exemplo.com"
+
+
+@pytest.fixture()
+def cliente_pix(tmp_path, monkeypatch):
+    monkeypatch.setenv("CONFERENTE_DB", str(tmp_path / "pix.db"))
+    monkeypatch.setenv("MP_ACCESS_TOKEN", "")
+    monkeypatch.setenv("PIX_CHAVE", "davi@exemplo.com")
+    monkeypatch.setenv("PIX_NOME", "Davi Motta Peluci")
+    monkeypatch.setenv("PIX_CIDADE", "Campinas")
+    monkeypatch.setenv("ADMIN_SENHA", "admin-secreta")
+    from conferente.web.app import app
+    with TestClient(app) as c:
+        yield c
+
+
+def test_fluxo_pix_manual(cliente_pix):
+    c = cliente_pix
+    cadastrar(c)
+    r = c.post("/assinar", data={"plano": "fundador"}, follow_redirects=False)
+    link = r.headers["location"]
+    assert link.startswith("/pagamento/pix/CF-")
+    ref = link.rsplit("/", 1)[1]
+    pagina = c.get(link).text
+    assert "Pagar com Pix" in pagina and "R$ 300,00" in pagina
+    assert "br.gov.bcb.pix" in pagina and "5406300.00" in pagina  # valor dentro do código
+    assert "Já paguei" in pagina
+
+    # escritório avisa que pagou
+    r = c.post(f"{link}/paguei", follow_redirects=False)
+    assert r.headers["location"] == "/conta?resultado=informado"
+    conta = c.get("/conta?resultado=informado").text
+    assert "Recebemos o seu aviso" in conta and "Em conferência" in conta
+
+    # escolher outro plano não cancela o Pix já avisado
+    c.post("/assinar", data={"plano": "essencial"})
+    from conferente import pagamentos
+    assert pagamentos.obter(ref).status == "pendente"
+
+    # escritório não pode entrar na administração com a própria conta
+    assert "Senha de administração" in c.get("/admin").text
+    assert c.post(f"/admin/pagamento/{ref}", data={"acao": "confirmar"}, follow_redirects=False).headers["location"] == "/admin"
+    assert pagamentos.obter(ref).status == "pendente"
+
+    # você entra e confirma
+    assert c.post("/admin", data={"senha": "errada"}).status_code == 400
+    c.post("/admin", data={"senha": "admin-secreta"})
+    admin = c.get("/admin").text
+    assert "Pix para conferir" in admin and "Contábil Teste" in admin and "Avisou que pagou" in admin
+    r = c.post(f"/admin/pagamento/{ref}", data={"acao": "confirmar"}, follow_redirects=False)
+    assert r.headers["location"] == "/admin?ok=confirmado"
+    assert pagamentos.obter(ref).status == "aprovado"
+    assert c.get(f"/pagamento/{ref}/situacao").json() == {"status": "aprovado"}
+    from conferente import contas
+    assert contas.autenticar("ana@contabil.com.br", "senha-forte-1").plano == "fundador"
+
+
+def test_admin_desligado_sem_senha(cliente):
+    assert "está desligada" in cliente.get("/admin").text
+    assert cliente.post("/admin", data={"senha": ""}).status_code == 400

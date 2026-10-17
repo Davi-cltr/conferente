@@ -49,18 +49,29 @@
   <div class="caixa aguardando" id="pendente" data-ref="{{ pendente.referencia }}">
     <div class="info">
       <b>{{ pendente.nome_plano }} · {{ pendente.valor|brl }}</b>
-      <p class="det" style="margin:6px 0 0" id="pendente-texto"><span class="girando" aria-hidden="true"></span>Aguardando a confirmação. Esta página confere sozinha a cada 5 segundos.</p>
+      <p class="det" style="margin:6px 0 0" id="pendente-texto"><span class="girando" aria-hidden="true"></span>
+      {% if pendente.provedor == 'pix' and pendente.informado_em %}Você avisou que pagou. Assim que o Pix for confirmado, o acesso é liberado e esta página atualiza sozinha.
+      {% elif pendente.provedor == 'pix' %}Pague o Pix e depois clique em “Já paguei”.
+      {% else %}Aguardando a confirmação. Esta página confere sozinha a cada 5 segundos.{% endif %}</p>
     </div>
     <div style="display:flex;gap:10px;flex-wrap:wrap">
-      <a class="btn" href="{{ pendente.link }}" target="_blank" rel="noopener">Abrir a página de pagamento</a>
-      <form method="post" action="/pagamento/{{ pendente.referencia }}/verificar" style="margin:0"><button class="btn sec" type="submit">Já paguei, conferir agora</button></form>
-      <form method="post" action="/pagamento/{{ pendente.referencia }}/cancelar" style="margin:0"><button class="btn link" type="submit">Cancelar</button></form>
+      {% if pendente.provedor == 'pix' %}
+        <a class="btn {{ 'sec' if pendente.informado_em }}" href="{{ pendente.link }}">Ver o Pix</a>
+        {% if not pendente.informado_em %}
+        <form method="post" action="/pagamento/pix/{{ pendente.referencia }}/paguei" style="margin:0"><button class="btn sec" type="submit">Já paguei</button></form>
+        <form method="post" action="/pagamento/{{ pendente.referencia }}/cancelar" style="margin:0"><button class="btn link" type="submit">Cancelar</button></form>
+        {% endif %}
+      {% else %}
+        <a class="btn" href="{{ pendente.link }}" target="_blank" rel="noopener">Abrir a página de pagamento</a>
+        <form method="post" action="/pagamento/{{ pendente.referencia }}/verificar" style="margin:0"><button class="btn sec" type="submit">Já paguei, conferir agora</button></form>
+        <form method="post" action="/pagamento/{{ pendente.referencia }}/cancelar" style="margin:0"><button class="btn link" type="submit">Cancelar</button></form>
+      {% endif %}
     </div>
   </div>
   {% endif %}
 
   <h2>{% if conta.em_teste %}Escolha seu plano{% else %}Renovar ou mudar de plano{% endif %}</h2>
-  <p class="sub">Cada pagamento libera 30 dias, somados ao tempo que você ainda tem. Pix, cartão ou boleto{% if modo == 'mercadopago' %}, pelo Mercado Pago{% endif %}.</p>
+  <p class="sub">Cada pagamento libera 30 dias, somados ao tempo que você ainda tem. {% if modo == 'pix' %}Pagamento por Pix.{% else %}Pix, cartão ou boleto{% if modo == 'mercadopago' %}, pelo Mercado Pago{% endif %}.{% endif %}</p>
   <div class="planos">
   {% for p in planos %}
     {% if p.codigo != 'fundador' or vagas_fundador > 0 or conta.plano == 'fundador' %}
@@ -81,10 +92,10 @@
     <tbody>
     {% for p in pagamentos %}
       <tr>
-        <td>{{ p.criado_em[8:10] }}/{{ p.criado_em[5:7] }}/{{ p.criado_em[:4] }}</td>
+        <td>{{ p.criado_em|data_br }}</td>
         <td>{{ p.nome_plano }}</td>
         <td class="num">{{ p.valor|brl }}</td>
-        <td>{% if p.status == 'aprovado' %}<span class="selo ok">Pago</span>{% elif p.status == 'pendente' %}<span class="selo aviso">Aguardando</span>{% elif p.status == 'recusado' %}<span class="selo erro">Recusado</span>{% else %}<span class="selo neutro">Cancelado</span>{% endif %}</td>
+        <td>{% if p.status == 'aprovado' %}<span class="selo ok">Pago</span>{% elif p.status == 'pendente' %}<span class="selo aviso">{{ 'Em conferência' if p.informado_em else 'Aguardando' }}</span>{% elif p.status == 'recusado' %}<span class="selo erro">Recusado</span>{% else %}<span class="selo neutro">Cancelado</span>{% endif %}</td>
         <td style="font-size:13px;color:var(--suave)">{{ p.referencia }}</td>
       </tr>
     {% endfor %}

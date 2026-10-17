@@ -2,7 +2,11 @@
 
 Exemplo (veja configuracao-exemplo.txt):
 
-    MP_ACCESS_TOKEN=APP_USR-...      # vazio = modo simulado, sem Mercado Pago
+    PIX_CHAVE=seu@email.com          # Pix direto na sua conta, confirmado por você
+    PIX_NOME=Seu Nome
+    PIX_CIDADE=Campinas
+    ADMIN_SENHA=uma-senha-forte      # página /admin para confirmar os Pix
+    MP_ACCESS_TOKEN=APP_USR-...      # opcional: Mercado Pago no lugar do Pix manual
     BASE_URL=http://127.0.0.1:8000
 """
 
@@ -70,5 +74,26 @@ def caminho_banco() -> Path:
     return p
 
 
+def pix_chave() -> str:
+    return os.environ.get("PIX_CHAVE", "").strip()
+
+
+def pix_nome() -> str:
+    return os.environ.get("PIX_NOME", "").strip()
+
+
+def pix_cidade() -> str:
+    return os.environ.get("PIX_CIDADE", "").strip()
+
+
+def admin_senha() -> str:
+    return os.environ.get("ADMIN_SENHA", "").strip()
+
+
 def modo_pagamento() -> str:
-    return "mercadopago" if mp_token() else "simulado"
+    """mercadopago (com token) > pix (com chave Pix) > simulado."""
+    if mp_token():
+        return "mercadopago"
+    if pix_chave():
+        return "pix"
+    return "simulado"

@@ -26,6 +26,17 @@ _env = Environment(
 )
 _env.filters["brl"] = _brl
 _env.filters["pct"] = _pct
+
+
+def _data_br(texto: str | None, hora: bool = False) -> str:
+    """Datas do banco (UTC, 'AAAA-MM-DD HH:MM:SS') no horário de Brasília."""
+    if not texto:
+        return ""
+    d = datetime.fromisoformat(texto).replace(tzinfo=timezone.utc).astimezone(BRASILIA)
+    return d.strftime("%d/%m/%Y %H:%M" if hora else "%d/%m/%Y")
+
+
+_env.filters["data_br"] = _data_br
 _env.filters["cnpj"] = lambda d: (
     f"{d[:2]}.{d[2:5]}.{d[5:8]}/{d[8:12]}-{d[12:]}" if d and len(d) == 14 else (d or "—")
 )

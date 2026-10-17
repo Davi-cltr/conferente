@@ -28,7 +28,7 @@ conferente = "conferente.cli:main"
 where = ["src"]
 
 [tool.setuptools.package-data]
-conferente = ["tabelas/*.json", "regras/*.json", "templates/*"]
+conferente = ["tabelas/*.json", "regras/*.json", "templates/*", "estaticos/*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

@@ -184,3 +184,9 @@ def vagas_fundador_restantes() -> int:
     with transacao() as con:
         n = con.execute("SELECT COUNT(*) FROM contas WHERE plano = 'fundador'").fetchone()[0]
     return max(0, config.VAGAS_FUNDADOR - n)
+
+
+def todas() -> list[Conta]:
+    with transacao() as con:
+        rs = con.execute("SELECT * FROM contas ORDER BY id DESC").fetchall()
+    return [Conta.de_linha(r) for r in rs]

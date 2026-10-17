@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block titulo %}Administração · Conferente{% endblock %}
+{% block corpo %}
+<div class="w estreito">
+  <h1>Administração</h1>
+  {% if desligado %}
+    <div class="msg aviso">A página de administração está desligada. Para ligar, coloque uma senha em <b>ADMIN_SENHA</b> no arquivo <b>configuracao.txt</b> e abra o <b>iniciar.bat</b> de novo.</div>
+  {% else %}
+  <p class="sub">Área para confirmar os pagamentos por Pix.</p>
+  <form class="caixa campos" method="post" action="/admin">
+    {% if erro %}<div class="msg erro">{{ erro }}</div>{% endif %}
+    <div><label for="senha">Senha de administração</label><input id="senha" name="senha" type="password" required autocomplete="current-password"></div>
+    <button class="btn largo" type="submit">Entrar</button>
+  </form>
+  {% endif %}
+</div>
+{% endblock %}

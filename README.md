@@ -35,7 +35,10 @@ Veja um relatório de exemplo em [docs/exemplo-relatorio.html](docs/exemplo-rela
 
 O sistema completo tem: site com planos, cadastro do escritório (com 14 dias grátis), login, área **Minha conta** com pagamento por plano e a conferência de notas, liberada só para contas ativas. Contas e pagamentos ficam em `dados/conferente.db`.
 
-Sem configuração, os pagamentos são **simulados**. Para usar o Mercado Pago, siga [docs/pagamento-mercadopago.md](docs/pagamento-mercadopago.md).
+Sem configuração, os pagamentos são **simulados**. Para receber de verdade:
+
+- **Pix direto na sua conta**, confirmado por você numa página de administração: [docs/pagamento-pix.md](docs/pagamento-pix.md).
+- **Mercado Pago** (confirmação automática): [docs/pagamento-mercadopago.md](docs/pagamento-mercadopago.md).
 
 Para testar a conferência, use os arquivos da pasta `tests/amostras`.
 

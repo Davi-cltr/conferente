@@ -1,8 +1,19 @@
 # Copie este arquivo com o nome "configuracao.txt" (na mesma pasta) e preencha.
 # Abra no Bloco de Notas. Depois de mudar, feche e abra o iniciar.bat de novo.
 
-# Chave de acesso do Mercado Pago (Suas integrações → sua aplicação → Credenciais de teste).
-# Deixe vazio para usar o modo simulado, que não cobra nada.
+# ---- Pix direto na sua conta ----
+# Sua chave Pix: e-mail, CPF (só números), telefone (+5519999999999) ou chave aleatória.
+PIX_CHAVE=
+# Seu nome como aparece no banco (até 25 letras) e sua cidade (até 15 letras).
+PIX_NOME=
+PIX_CIDADE=
+
+# Senha da página de administração (http://127.0.0.1:8000/admin),
+# onde você confirma os Pix recebidos. Use uma senha só sua.
+ADMIN_SENHA=
+
+# ---- Opcional ----
+# Chave do Mercado Pago. Se preenchida, substitui o Pix manual.
 MP_ACCESS_TOKEN=
 
 # Endereço onde o sistema roda. No seu computador, deixe como está.

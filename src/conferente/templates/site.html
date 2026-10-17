@@ -76,7 +76,7 @@ section.bloco{padding:64px 0;border-top:1px solid var(--linha)}
 
 <section class="bloco" id="planos"><div class="w">
   <h2>Planos</h2>
-  <p class="sub">Comece com {{ dias_teste }} dias grátis, sem cartão. Depois, pague por Pix, cartão ou boleto. Cada pagamento libera 30 dias.</p>
+  <p class="sub">Comece com {{ dias_teste }} dias grátis, sem cartão. Depois, pague {% if modo == 'pix' %}por Pix{% else %}por Pix, cartão ou boleto{% endif %}. Cada pagamento libera 30 dias.</p>
   <div class="planos">
   {% for p in planos %}
     {% if p.codigo != 'fundador' or vagas_fundador > 0 %}

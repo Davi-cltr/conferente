@@ -5,7 +5,11 @@ Cada mensalidade é um pagamento avulso (Pix, cartão ou boleto) que libera
 
 - **simulado** (padrão, sem configuração): uma tela interna com os botões
   "Aprovar" e "Recusar", para testar o fluxo sem dinheiro.
-- **mercadopago**: Checkout Pro. Ativado quando MP_ACCESS_TOKEN está no configuracao.txt.
+- **pix**: Pix direto na sua conta (QR Code e copia e cola com valor). O
+  escritório avisa "Já paguei" e você confirma na página /admin depois de
+  ver o dinheiro no banco. Ativado quando PIX_CHAVE está no configuracao.txt.
+- **mercadopago**: Checkout Pro. Ativado quando MP_ACCESS_TOKEN está no configuracao.txt
+  (tem prioridade sobre o Pix manual).
 
 O pagamento só é aceito depois de conferido direto na API do Mercado Pago
 (referência, status e valor), nunca pelos parâmetros que voltam na URL.
@@ -46,11 +50,23 @@ class Pagamento:
     status: str
     criado_em: str
     aprovado_em: str | None
+    informado_em: str | None = None
 
     @classmethod
     def de_linha(cls, r) -> "Pagamento":
         return cls(r["id"], r["referencia"], r["conta_id"], r["plano"], Decimal(r["valor"]), r["provedor"],
-                   r["provedor_id"], r["link"], r["status"], r["criado_em"], r["aprovado_em"])
+                   r["provedor_id"], r["link"], r["status"], r["criado_em"], r["aprovado_em"],
+                   r["informado_em"] if "informado_em" in r.keys() else None)
+
+    @property
+    def txid(self) -> str:
+        from .pix import txid
+        return txid(self.referencia)
+
+    def pix_copia_e_cola(self) -> str:
+        from .pix import copia_e_cola
+        return copia_e_cola(config.pix_chave(), config.pix_nome(), config.pix_cidade(), self.valor,
+                            self.txid, descricao=f"Conferente {self.nome_plano}")
 
     @property
     def nome_plano(self) -> str:
@@ -142,6 +158,8 @@ def criar_cobranca(conta: Conta, codigo_plano: str) -> Pagamento:
     provedor = config.modo_pagamento()
     if provedor == "mercadopago":
         provedor_id, link = _criar_preferencia(conta, plano, ref)
+    elif provedor == "pix":
+        provedor_id, link = None, f"/pagamento/pix/{ref}"
     else:
         provedor_id, link = None, f"/pagamento/simulado/{ref}"
     with transacao() as con:
@@ -213,6 +231,44 @@ def simular(ref: str, aprovar: bool) -> Pagamento | None:
     return obter(ref)
 
 
+def informar_pix(ref: str) -> None:
+    """O escritório avisou que pagou. Fica aguardando a sua confirmação."""
+    with transacao() as con:
+        con.execute("UPDATE pagamentos SET informado_em = datetime('now') "
+                    "WHERE referencia = ? AND provedor = 'pix' AND status = 'pendente'", (ref,))
+
+
+def confirmar_manual(ref: str) -> bool:
+    """Você viu o Pix no banco: libera 30 dias."""
+    return _aprovar(ref, "PIX-CONFIRMADO")
+
+
+def recusar_manual(ref: str) -> None:
+    _marcar(ref, "recusado")
+
+
+def para_conferir() -> list[dict]:
+    """Pix pendentes (os avisados primeiro) com os dados do escritório, para a página /admin."""
+    with transacao() as con:
+        rs = con.execute(
+            "SELECT p.*, c.escritorio, c.cnpj, c.responsavel, c.email, c.whatsapp FROM pagamentos p "
+            "JOIN contas c ON c.id = p.conta_id WHERE p.status = 'pendente' AND p.provedor = 'pix' "
+            "ORDER BY p.informado_em IS NULL, p.informado_em DESC, p.id DESC"
+        ).fetchall()
+    return [dict(pagamento=Pagamento.de_linha(r), **{k: r[k] for k in ("escritorio", "cnpj", "responsavel", "email", "whatsapp")}) for r in rs]
+
+
+def recentes(limite: int = 30) -> list[dict]:
+    with transacao() as con:
+        rs = con.execute(
+            "SELECT p.*, c.escritorio FROM pagamentos p JOIN contas c ON c.id = p.conta_id "
+            "WHERE p.status != 'pendente' ORDER BY p.id DESC LIMIT ?", (limite,)
+        ).fetchall()
+    return [dict(pagamento=Pagamento.de_linha(r), escritorio=r["escritorio"]) for r in rs]
+
+
 def cancelar_pendentes(conta_id: int) -> None:
     with transacao() as con:
-        con.execute("UPDATE pagamentos SET status = 'cancelado' WHERE conta_id = ? AND status = 'pendente'", (conta_id,))
+        # Pix que o escritório já avisou que pagou nunca é cancelado: espera a sua conferência.
+        con.execute("UPDATE pagamentos SET status = 'cancelado' "
+                    "WHERE conta_id = ? AND status = 'pendente' AND informado_em IS NULL", (conta_id,))

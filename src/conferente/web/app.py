@@ -6,13 +6,18 @@ Contas e pagamentos ficam no SQLite local (dados/conferente.db).
 
 from __future__ import annotations
 
+import hmac
 import json
+import secrets
+import time
 import urllib.parse
 from contextlib import asynccontextmanager
 from decimal import Decimal, InvalidOperation
 
 from fastapi import FastAPI, Form, Request, UploadFile
 from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse, RedirectResponse
+from fastapi.staticfiles import StaticFiles
+from importlib import resources
 
 from .. import __version__, config, contas, db, pagamentos
 from ..parser import ler_lote
@@ -21,6 +26,8 @@ from ..relatorio import _env, gerar_html, processar
 LIMITE_ARQUIVOS = 3000
 LIMITE_TOTAL = 200 * 1024 * 1024
 COOKIE = "conferente_sessao"
+COOKIE_ADMIN = "conferente_admin"
+_sessoes_admin: set[str] = set()
 
 
 @asynccontextmanager
@@ -30,6 +37,9 @@ async def _ciclo(app):
 
 
 app = FastAPI(title="Conferente", version=__version__, docs_url=None, redoc_url=None, lifespan=_ciclo)
+# qrcode.js: biblioteca qrcode-generator 1.4.4 (Kazuhiko Arase, licença MIT), guardada no projeto
+# para o QR Code do Pix funcionar mesmo sem internet.
+app.mount("/estaticos", StaticFiles(directory=str(resources.files("conferente").joinpath("estaticos"))), name="estaticos")
 
 
 # ---------------------------------------------------------------- utilidades
@@ -142,6 +152,9 @@ def conta_pagina(request: Request, bemvindo: int = 0, plano: str = "", resultado
         msgs.append(("ok", f"Pagamento aprovado. Seu acesso vai até {conta.ativo_ate:%d/%m/%Y}."))
     elif resultado == "recusado":
         msgs.append(("erro", "O pagamento foi recusado. Tente de novo ou use outra forma de pagamento."))
+    elif resultado == "informado":
+        msgs.append(("ok", "Recebemos o seu aviso de pagamento. Assim que o Pix for confirmado, o acesso é liberado "
+                           "por mais 30 dias. Costuma levar até 1 dia útil."))
     elif resultado == "pendente":
         msgs.append(("aviso", "Ainda não recebemos a confirmação deste pagamento. Pix costuma confirmar em segundos; boleto, em até 2 dias úteis."))
     if erro:
@@ -164,7 +177,7 @@ def assinar(request: Request, plano: str = Form("")):
         p = pagamentos.criar_cobranca(conta, plano)
     except pagamentos.ErroPagamento as e:
         return _ir("/conta?erro=" + urllib.parse.quote(str(e)))
-    return _ir(p.link if p.provedor == "simulado" else "/conta")
+    return _ir(p.link if p.provedor in ("simulado", "pix") else "/conta")
 
 
 @app.get("/pagamento/{ref}/situacao")
@@ -244,6 +257,81 @@ def simulado(request: Request, ref: str, acao: str = Form("")):
         return _ir("/conta")
     p = pagamentos.simular(ref, aprovar=(acao == "aprovar"))
     return _ir(f"/conta?resultado={p.status}")
+
+
+# ---------------------------------------------------------------- Pix manual
+
+
+@app.get("/pagamento/pix/{ref}", response_class=HTMLResponse)
+def pix_pagina(request: Request, ref: str):
+    p = _pagamento_da_conta(ref, _conta(request))
+    if p is None or p.provedor != "pix":
+        return _ir("/conta")
+    return _pagina("pix.html", request, pagamento=p, codigo=p.pix_copia_e_cola() if p.status == "pendente" else "",
+                   chave=config.pix_chave(), recebedor=config.pix_nome())
+
+
+@app.post("/pagamento/pix/{ref}/paguei")
+def pix_paguei(request: Request, ref: str):
+    p = _pagamento_da_conta(ref, _conta(request))
+    if p and p.provedor == "pix":
+        pagamentos.informar_pix(ref)
+    return _ir("/conta?resultado=informado")
+
+
+# ---------------------------------------------------------------- administração
+
+
+def _admin(request: Request) -> bool:
+    return request.cookies.get(COOKIE_ADMIN, "") in _sessoes_admin
+
+
+@app.get("/admin", response_class=HTMLResponse)
+def admin(request: Request, ok: str = ""):
+    if not config.admin_senha():
+        return _pagina("admin_entrar.html", request, erro=None, desligado=True)
+    if not _admin(request):
+        return _pagina("admin_entrar.html", request, erro=None, desligado=False)
+    return _pagina("admin.html", request, conferir=pagamentos.para_conferir(), recentes=pagamentos.recentes(),
+                   contas_lista=contas.todas(), ok=ok, pix_chave=config.pix_chave())
+
+
+@app.post("/admin")
+def admin_entrar(request: Request, senha: str = Form("")):
+    certa = config.admin_senha()
+    if not certa or not hmac.compare_digest(senha.encode(), certa.encode()):
+        time.sleep(1)
+        return _pagina("admin_entrar.html", request, status=400, erro="Senha incorreta.", desligado=not certa)
+    token = secrets.token_urlsafe(32)
+    _sessoes_admin.add(token)
+    resp = _ir("/admin")
+    resp.set_cookie(COOKIE_ADMIN, token, httponly=True, samesite="strict", max_age=12 * 3600,
+                    secure=config.base_url().startswith("https://"))
+    return resp
+
+
+@app.post("/admin/sair")
+def admin_sair(request: Request):
+    _sessoes_admin.discard(request.cookies.get(COOKIE_ADMIN, ""))
+    resp = _ir("/")
+    resp.delete_cookie(COOKIE_ADMIN)
+    return resp
+
+
+@app.post("/admin/pagamento/{ref}")
+def admin_pagamento(request: Request, ref: str, acao: str = Form("")):
+    if not _admin(request):
+        return _ir("/admin")
+    p = pagamentos.obter(ref)
+    if p is None or p.status != "pendente":
+        return _ir("/admin")
+    if acao == "confirmar":
+        pagamentos.confirmar_manual(ref)
+        return _ir("/admin?ok=confirmado")
+    if acao == "recusar":
+        pagamentos.recusar_manual(ref)
+        return _ir("/admin?ok=recusado")
+    return _ir("/admin")
 
 
 # ---------------------------------------------------------------- conferência

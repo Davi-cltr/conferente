@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block titulo %}Administração · Conferente{% endblock %}
+{% block estilo %}
+.pend{display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center;padding:16px 18px;border-bottom:1px solid var(--linha)}
+.pend:last-child{border-bottom:0}
+.pend .det{color:var(--suave);font-size:14px}
+.pend .valor{font:700 22px/1.2 Fraunces,serif}
+.pend form{display:flex;gap:8px;margin:0;flex-wrap:wrap}
+.lista{background:var(--branco);border:1px solid var(--linha);border-radius:14px}
+.cab-admin{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+@media(max-width:640px){.pend{grid-template-columns:1fr}}
+{% endblock %}
+{% block corpo %}
+<div class="w">
+  <div class="cab-admin">
+    <h1>Administração</h1>
+    <form method="post" action="/admin/sair" style="margin:0"><button class="btn sec" type="submit">Sair da administração</button></form>
+  </div>
+  {% if ok == 'confirmado' %}<div class="msg ok">Pagamento confirmado. O escritório já tem mais 30 dias de acesso.</div>{% endif %}
+  {% if ok == 'recusado' %}<div class="msg aviso">Pagamento marcado como recusado.</div>{% endif %}
+
+  <h2>Pix para conferir</h2>
+  <p class="sub">Abra o extrato do seu banco e procure um Pix com o <b>valor</b> e o <b>identificador</b> abaixo (alguns bancos mostram o identificador; se o seu não mostrar, confira pelo nome de quem pagou e pela data). Só confirme o que você viu entrar na conta.</p>
+  {% if conferir %}
+  <div class="lista">
+    {% for c in conferir %}
+    {% set p = c.pagamento %}
+    <div class="pend">
+      <div>
+        <div>{% if p.informado_em %}<span class="selo aviso">Avisou que pagou · {{ p.informado_em|data_br(true) }}</span>{% else %}<span class="selo neutro">Ainda não avisou</span>{% endif %}</div>
+        <div class="valor">{{ p.valor|brl }} <span style="font:500 15px Inter,sans-serif;color:var(--suave)">· plano {{ p.nome_plano }}</span></div>
+        <div><b>{{ c.escritorio }}</b> · {{ c.cnpj|cnpj }}</div>
+        <div class="det">{{ c.responsavel }} · {{ c.email }}{% if c.whatsapp %} · WhatsApp {{ c.whatsapp }}{% endif %}</div>
+        <div class="det">Identificador <b>{{ p.txid }}</b> · criado em {{ p.criado_em|data_br }}</div>
+      </div>
+      <form method="post" action="/admin/pagamento/{{ p.referencia }}">
+        <button class="btn" name="acao" value="confirmar" type="submit">Confirmar recebimento</button>
+        <button class="btn sec" name="acao" value="recusar" type="submit">Não recebi</button>
+      </form>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="sub">Nenhum Pix aguardando conferência.</p>
+  {% endif %}
+
+  <h2>Escritórios cadastrados ({{ contas_lista|length }})</h2>
+  {% if contas_lista %}
+  <div class="tabela"><table>
+    <thead><tr><th>Escritório</th><th>Contato</th><th>Plano</th><th>Acesso até</th></tr></thead>
+    <tbody>
+    {% for c in contas_lista %}
+      <tr>
+        <td><b>{{ c.escritorio }}</b><br><span style="color:var(--suave);font-size:13px">{{ c.cnpj|cnpj }}</span></td>
+        <td>{{ c.responsavel }}<br><span style="color:var(--suave);font-size:13px">{{ c.email }}{% if c.whatsapp %} · {{ c.whatsapp }}{% endif %}</span></td>
+        <td>{{ c.nome_plano }}</td>
+        <td>{{ c.ativo_ate.strftime('%d/%m/%Y') }} {% if c.ativa %}<span class="selo ok">ativo</span>{% else %}<span class="selo erro">vencido</span>{% endif %}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+  {% else %}
+  <p class="sub">Nenhum escritório cadastrado ainda.</p>
+  {% endif %}
+
+  <h2>Últimos pagamentos</h2>
+  {% if recentes %}
+  <div class="tabela"><table>
+    <thead><tr><th>Data</th><th>Escritório</th><th>Plano</th><th class="num">Valor</th><th>Situação</th></tr></thead>
+    <tbody>
+    {% for r in recentes %}{% set p = r.pagamento %}
+      <tr>
+        <td>{{ p.criado_em|data_br }}</td>
+        <td>{{ r.escritorio }}</td>
+        <td>{{ p.nome_plano }}</td>
+        <td class="num">{{ p.valor|brl }}</td>
+        <td>{% if p.status == 'aprovado' %}<span class="selo ok">Pago</span>{% elif p.status == 'recusado' %}<span class="selo erro">Recusado</span>{% else %}<span class="selo neutro">Cancelado</span>{% endif %}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+  {% else %}
+  <p class="sub">Nenhum pagamento concluído ainda.</p>
+  {% endif %}
+</div>
+{% endblock %}

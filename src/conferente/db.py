@@ -36,7 +36,8 @@ CREATE TABLE IF NOT EXISTS pagamentos (
     link TEXT,
     status TEXT NOT NULL DEFAULT 'pendente',
     criado_em TEXT NOT NULL DEFAULT (datetime('now')),
-    aprovado_em TEXT
+    aprovado_em TEXT,
+    informado_em TEXT
 );
 CREATE INDEX IF NOT EXISTS ix_pag_conta ON pagamentos(conta_id);
 """
@@ -52,6 +53,9 @@ def conectar() -> sqlite3.Connection:
 def iniciar() -> None:
     with conectar() as con:
         con.executescript(ESQUEMA)
+        colunas = {r["name"] for r in con.execute("PRAGMA table_info(pagamentos)")}
+        if "informado_em" not in colunas:  # bancos criados antes do Pix manual
+            con.execute("ALTER TABLE pagamentos ADD COLUMN informado_em TEXT")
 
 
 @contextmanager

@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block titulo %}Pagar com Pix · Conferente{% endblock %}
+{% block estilo %}
+.pix{display:grid;grid-template-columns:auto 1fr;gap:24px;align-items:start}
+#qr{width:220px;height:220px;background:#fff;border:1px solid var(--linha);border-radius:12px;display:grid;place-items:center;padding:8px}
+#qr svg{width:100%;height:100%}
+.codigo{font:13px/1.45 ui-monospace,Menlo,Consolas,monospace;word-break:break-all;background:var(--papel);border:1px solid var(--linha);border-radius:9px;padding:10px 12px;max-height:120px;overflow:auto}
+.valor{font:700 36px/1.1 Fraunces,serif}
+.dados{color:var(--suave);font-size:14px}
+ol{padding-left:20px;margin:8px 0 0}
+@media(max-width:640px){.pix{grid-template-columns:1fr}#qr{margin:0 auto}}
+{% endblock %}
+{% block corpo %}
+<div class="w" style="max-width:760px">
+  <h1>Pagar com Pix</h1>
+  {% if pagamento.status != 'pendente' %}
+    <div class="msg {{ 'ok' if pagamento.status == 'aprovado' else 'aviso' }}">Este pagamento já está {{ {'aprovado':'confirmado','recusado':'recusado','cancelado':'cancelado'}[pagamento.status] }}.</div>
+    <a class="btn" href="/conta">Voltar para minha conta</a>
+  {% else %}
+  <p class="sub">Plano {{ pagamento.nome_plano }} · 30 dias de acesso.</p>
+  <div class="caixa pix">
+    <div id="qr" aria-label="QR Code do Pix"><span class="dados">Carregando QR Code…</span></div>
+    <div style="display:grid;gap:12px;min-width:0">
+      <div><div class="dados">Valor</div><div class="valor">{{ pagamento.valor|brl }}</div></div>
+      <div class="dados">Recebedor: <b>{{ recebedor }}</b><br>Identificador: <b>{{ pagamento.txid }}</b></div>
+      <div>
+        <label for="codigo">Pix copia e cola</label>
+        <div class="codigo" id="codigo">{{ codigo }}</div>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn sec" type="button" id="copiar">Copiar código</button>
+      </div>
+    </div>
+  </div>
+
+  <h2>Depois de pagar</h2>
+  <div class="caixa" style="display:grid;gap:12px">
+    <ol>
+      <li>Abra o app do seu banco, escolha <b>Pix → Ler QR Code</b> ou <b>Pix copia e cola</b> e confirme o valor de {{ pagamento.valor|brl }}.</li>
+      <li>Volte aqui e clique em <b>Já paguei</b>.</li>
+      <li>Confirmamos o recebimento e liberamos 30 dias de acesso, normalmente em até 1 dia útil.</li>
+    </ol>
+    {% if pagamento.informado_em %}
+      <div class="msg ok" style="margin:0">Você já avisou que pagou. Assim que confirmarmos, o acesso é liberado.</div>
+      <a class="btn sec" href="/conta">Voltar para minha conta</a>
+    {% else %}
+      <form method="post" action="/pagamento/pix/{{ pagamento.referencia }}/paguei" style="margin:0">
+        <button class="btn largo" type="submit">Já paguei</button>
+      </form>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+{% block script %}
+{% if pagamento.status == 'pendente' %}
+<script src="/estaticos/qrcode.js"></script>
+<script>
+const codigo = document.getElementById('codigo').textContent.trim();
+const caixa = document.getElementById('qr');
+try {
+  const qr = qrcode(0, 'M'); qr.addData(codigo); qr.make();
+  caixa.innerHTML = qr.createSvgTag({cellSize: 4, margin: 2, scalable: true});
+} catch (e) {
+  caixa.innerHTML = '<span class="dados" style="padding:12px;text-align:center">Não foi possível gerar o QR Code. Use o copia e cola.</span>';
+}
+document.getElementById('copiar').addEventListener('click', async (ev) => {
+  const b = ev.currentTarget;
+  try { await navigator.clipboard.writeText(codigo); b.textContent = 'Copiado'; }
+  catch (e) {
+    const r = document.createRange(); r.selectNodeContents(document.getElementById('codigo'));
+    const s = getSelection(); s.removeAllRanges(); s.addRange(r); b.textContent = 'Selecionado: use Ctrl+C';
+  }
+  setTimeout(() => { b.textContent = 'Copiar código'; }, 2500);
+});
+</script>
+{% endif %}
+{% endblock %}

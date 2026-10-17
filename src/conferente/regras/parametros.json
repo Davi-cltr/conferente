@@ -1,0 +1,31 @@
+{
+  "_versao": "2026-10-17",
+  "_aviso": "Parâmetros legais mudam por nota técnica e lei complementar. Cada valor traz a fonte. Revise antes de cada mês de apuração.",
+  "obrigatoriedade": {
+    "regime_normal": {
+      "crt": ["3"],
+      "inicio": "2026-08-03",
+      "fonte": "NT 2025.002 v1.51 / Ato Técnico Conjunto RFB/CGIBS nº 1/2026: campos IBS/CBS obrigatórios em produção para CRT 3. Rejeição 1115 (regra UB12-10) adiada para implementação futura, mas a obrigação legal permanece."
+    },
+    "simples_mei": {
+      "crt": ["1", "2", "4"],
+      "inicio": "2027-01-04",
+      "fonte": "Art. 348 da LC 214/2025: optantes do Simples Nacional e MEI não participam do ano-teste de 2026; obrigação a partir de janeiro de 2027."
+    }
+  },
+  "aliquotas": {
+    "2026": {
+      "pCBS": 0.9,
+      "pIBSUF": 0.1,
+      "pIBSMun": 0.0,
+      "fonte": "Ano-teste: CBS 0,9% e IBS 0,1% (art. 343 e seguintes da LC 214/2025). Sem recolhimento efetivo para quem cumpre as obrigações acessórias; valores compensáveis com PIS/Cofins."
+    },
+    "2027": {
+      "pCBS": null,
+      "pIBSUF": 0.05,
+      "pIBSMun": 0.05,
+      "fonte": "IBS de 0,1% em 2027 e 2028 (0,05% UF + 0,05% Município, art. 344 da LC 214/2025). Alíquota da CBS de 2027 ainda NÃO fixada: Senado tem até 15/12/2026; se não fixar, valem as alíquotas calculadas pelo TCU (art. 349, §2º). Preencha pCBS quando for publicada."
+    }
+  },
+  "tolerancia_centavos": 0.01
+}

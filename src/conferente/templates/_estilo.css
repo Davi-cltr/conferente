@@ -1,0 +1,74 @@
+:root {
+  --tinta: #14211d;
+  --suave: #5b6b66;
+  --linha: #dfe5e2;
+  --fundo: #f6f8f7;
+  --papel: #ffffff;
+  --marca: #0f5f4b;
+  --marca-claro: #e3f1ec;
+  --erro: #b42318;
+  --erro-claro: #fdecea;
+  --aviso: #a15c07;
+  --aviso-claro: #fef4e4;
+  --info: #475467;
+  --info-claro: #eef1f4;
+  --ok: #067647;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--fundo);
+  color: var(--tinta);
+  font: 15px/1.5 "Inter", "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
+  font-variant-numeric: tabular-nums;
+}
+.folha { max-width: 980px; margin: 0 auto; padding: 32px 20px 64px; }
+header.topo { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; border-bottom: 2px solid var(--tinta); padding-bottom: 14px; margin-bottom: 28px; flex-wrap: wrap; }
+.marca { font-weight: 700; letter-spacing: -0.01em; font-size: 20px; }
+.marca span { color: var(--marca); }
+.meta { color: var(--suave); font-size: 13px; text-align: right; }
+h1 { font-size: 28px; letter-spacing: -0.02em; margin: 0 0 4px; }
+h2 { font-size: 19px; margin: 40px 0 12px; letter-spacing: -0.01em; }
+h3 { font-size: 16px; margin: 0; }
+p.lead { color: var(--suave); margin: 0 0 24px; max-width: 70ch; }
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
+.kpi { background: var(--papel); border: 1px solid var(--linha); border-radius: 10px; padding: 14px 16px; }
+.kpi b { display: block; font-size: 26px; letter-spacing: -0.02em; }
+.kpi small { color: var(--suave); }
+.kpi.erro b { color: var(--erro); }
+.kpi.aviso b { color: var(--aviso); }
+table { width: 100%; border-collapse: collapse; background: var(--papel); border: 1px solid var(--linha); border-radius: 10px; overflow: hidden; }
+th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--linha); vertical-align: top; }
+th { font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--suave); background: var(--fundo); }
+td.num, th.num { text-align: right; white-space: nowrap; }
+tr:last-child td { border-bottom: 0; }
+.selo { display: inline-block; font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 99px; white-space: nowrap; }
+.selo.erro { background: var(--erro-claro); color: var(--erro); }
+.selo.aviso { background: var(--aviso-claro); color: var(--aviso); }
+.selo.info { background: var(--info-claro); color: var(--info); }
+.selo.ok { background: var(--marca-claro); color: var(--ok); }
+.cliente { background: var(--papel); border: 1px solid var(--linha); border-radius: 12px; margin: 16px 0; overflow: hidden; break-inside: avoid-page; }
+.cliente > .cab { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 14px 18px; border-bottom: 1px solid var(--linha); flex-wrap: wrap; }
+.cliente .sub { color: var(--suave); font-size: 13px; }
+.achado { padding: 14px 18px; border-bottom: 1px solid var(--linha); display: grid; grid-template-columns: 70px 1fr; gap: 12px; }
+.achado:last-child { border-bottom: 0; }
+.achado .cod { font: 600 12px/1.4 ui-monospace, Menlo, monospace; color: var(--suave); padding-top: 3px; }
+.achado .tit { font-weight: 600; }
+.achado .onde { font-size: 13px; color: var(--suave); }
+.achado .fazer { font-size: 14px; margin-top: 6px; padding-left: 10px; border-left: 3px solid var(--marca); }
+.vazio { padding: 16px 18px; color: var(--ok); }
+.nota-rodape { color: var(--suave); font-size: 13px; margin-top: 40px; border-top: 1px solid var(--linha); padding-top: 14px; }
+.alerta { background: var(--aviso-claro); border: 1px solid #f5d9ab; border-radius: 10px; padding: 12px 16px; margin: 12px 0; }
+details summary { cursor: pointer; color: var(--marca); font-weight: 600; padding: 10px 18px; }
+@media (max-width: 640px) {
+  .achado { grid-template-columns: 1fr; gap: 4px; }
+  .meta { text-align: left; }
+  table { display: block; overflow-x: auto; }
+}
+@media print {
+  body { background: #fff; font-size: 12px; }
+  .folha { padding: 0; max-width: none; }
+  .nao-imprimir { display: none !important; }
+  details { display: block; }
+  details > summary { display: none; }
+}

@@ -1,4 +1,5 @@
-# Copie este arquivo para ".env" e preencha.
+# Copie este arquivo com o nome "configuracao.txt" (na mesma pasta) e preencha.
+# Abra no Bloco de Notas. Depois de mudar, feche e abra o iniciar.bat de novo.
 
 # Chave de acesso do Mercado Pago (Suas integrações → sua aplicação → Credenciais de teste).
 # Deixe vazio para usar o modo simulado, que não cobra nada.

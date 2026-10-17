@@ -1,6 +1,6 @@
-"""Configuração lida do arquivo .env na raiz do projeto (ou de variáveis de ambiente).
+"""Configuração lida de configuracao.txt (ou .env) na raiz do projeto, ou de variáveis de ambiente.
 
-Exemplo de .env (veja .env.exemplo):
+Exemplo (veja configuracao-exemplo.txt):
 
     MP_ACCESS_TOKEN=APP_USR-...      # vazio = modo simulado, sem Mercado Pago
     BASE_URL=http://127.0.0.1:8000
@@ -19,7 +19,7 @@ RAIZ = Path(__file__).resolve().parents[2]
 def _carregar_env(caminho: Path) -> None:
     if not caminho.is_file():
         return
-    for linha in caminho.read_text(encoding="utf-8").splitlines():
+    for linha in caminho.read_text(encoding="utf-8-sig")  # Bloco de Notas pode salvar com BOM.splitlines():
         linha = linha.strip()
         if not linha or linha.startswith("#") or "=" not in linha:
             continue
@@ -27,6 +27,7 @@ def _carregar_env(caminho: Path) -> None:
         os.environ.setdefault(chave.strip(), valor.split(" #")[0].strip().strip('"').strip("'"))
 
 
+_carregar_env(RAIZ / "configuracao.txt")
 _carregar_env(RAIZ / ".env")
 
 

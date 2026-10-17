@@ -5,7 +5,7 @@ Cada mensalidade é um pagamento avulso (Pix, cartão ou boleto) que libera
 
 - **simulado** (padrão, sem configuração): uma tela interna com os botões
   "Aprovar" e "Recusar", para testar o fluxo sem dinheiro.
-- **mercadopago**: Checkout Pro. Ativado quando MP_ACCESS_TOKEN está no .env.
+- **mercadopago**: Checkout Pro. Ativado quando MP_ACCESS_TOKEN está no configuracao.txt.
 
 O pagamento só é aceito depois de conferido direto na API do Mercado Pago
 (referência, status e valor), nunca pelos parâmetros que voltam na URL.
@@ -73,7 +73,7 @@ def _mp(metodo: str, caminho: str, corpo: dict | None = None, idempotencia: str 
     except urllib.error.HTTPError as e:
         detalhe = e.read().decode(errors="replace")[:300]
         if e.code == 401:
-            raise ErroPagamento("O Mercado Pago recusou a chave de acesso (MP_ACCESS_TOKEN). Confira o .env.") from None
+            raise ErroPagamento("O Mercado Pago recusou a chave de acesso (MP_ACCESS_TOKEN). Confira o configuracao.txt.") from None
         raise ErroPagamento(f"Mercado Pago respondeu {e.code}: {detalhe}") from None
     except urllib.error.URLError as e:
         raise ErroPagamento(f"Sem conexão com o Mercado Pago ({e.reason}). Tente de novo.") from None

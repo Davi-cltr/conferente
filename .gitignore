@@ -9,6 +9,7 @@ dist/
 /relatorio.html
 *.json.out
 .env
+configuracao.txt
 # XMLs reais de clientes nunca entram no repositório
 dados/
 clientes/

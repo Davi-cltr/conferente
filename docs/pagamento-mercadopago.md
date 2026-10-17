@@ -11,7 +11,7 @@ Sem configuração, o Conferente roda em **modo simulado**: uma faixa amarela no
 ## 2. Testar com dinheiro de mentira
 
 1. Entre no painel de desenvolvedor com a **conta de teste Vendedor**, abra a aplicação e copie o **Access Token** das credenciais (começa com `APP_USR-`).
-2. Na pasta do projeto, copie `.env.exemplo` para `.env` e cole o token:
+2. Na pasta do projeto, copie `configuracao-exemplo.txt` com o nome `configuracao.txt`, abra no Bloco de Notas e cole o token:
    ```
    MP_ACCESS_TOKEN=APP_USR-...
    ```
@@ -22,7 +22,7 @@ Sem configuração, o Conferente roda em **modo simulado**: uma faixa amarela no
 
 ## 3. Cobrar de verdade
 
-1. No painel, use as **credenciais de produção** da sua conta real e cole o novo token no `.env`.
+1. No painel, use as **credenciais de produção** da sua conta real e cole o novo token no `configuracao.txt`.
 2. Faça um pagamento real de um plano para confirmar (dá para estornar depois pelo Mercado Pago).
 
 ## Por que o retorno não é automático no seu computador
@@ -32,4 +32,4 @@ O Mercado Pago não aceita voltar para endereços locais (`127.0.0.1`). Por isso
 ## Segurança
 
 - O acesso só é liberado depois que o Conferente consulta o pagamento direto na API e confere referência, situação e valor. Os dados que voltam na URL nunca liberam acesso sozinhos.
-- O arquivo `.env` tem a sua chave secreta e **não vai para o GitHub** (está no `.gitignore`). Não envie esse arquivo para ninguém.
+- O arquivo `configuracao.txt` tem a sua chave secreta e **não vai para o GitHub** (está no `.gitignore`). Não envie esse arquivo para ninguém.

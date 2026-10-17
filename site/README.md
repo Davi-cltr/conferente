@@ -1,5 +1,7 @@
 # Vitrine (Netlify)
 
+No ar em **https://conferent.netlify.app** (publica sozinho a cada `git push` na branch `main`).
+
 Página de apresentação do Conferente para mandar a possíveis clientes. É estática: não roda o sistema, só mostra o produto, o relatório de exemplo e um formulário para pedir o teste grátis.
 
 | Arquivo | O que é |

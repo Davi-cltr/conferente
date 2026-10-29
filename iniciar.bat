@@ -40,7 +40,7 @@ goto fim
 
 :erro
 echo.
-echo  Algo deu errado na instalacao. Tire um print desta janela e mande para o Claude.
+echo  Algo deu errado na instalacao. Tire um print desta janela e peca ajuda.
 pause
 exit /b 1
 
